@@ -17,6 +17,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/i18n";
 import LangSwitch from "@/components/LangSwitch";
+import Logo from "@/components/Logo";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -51,7 +52,7 @@ export default function Navbar() {
         <div className="navbar-inner">
           {/* Header: nama web + subtitle — sengaja tidak diterjemahkan */}
           <Link href="/" className="brand">
-            <span className="brand-mark">💙</span>
+            <span className="brand-mark"><Logo size={24} /></span>
             <span>
               Your Personal FinTrack <span className="badge">PLANNER</span>
               <small>Manage Money Better and Wiser, Get Richer Faster!</small>

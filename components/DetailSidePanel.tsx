@@ -65,10 +65,10 @@ export function DetailSidePanel({ active, onChange, summary, onAdd }: PanelProps
         {t("Setiap tab menampilkan statistik, grafik, dan transaksi terkait — plus tombol tambah pos.")}
       </div>
       <div className="row" style={{ padding: "4px 4px 2px" }}>
-        <button className="btn sand sm" style={{ flex: 1, justifyContent: "center" }} onClick={() => onAdd("income")}>💰</button>
-        <button className="btn primary sm" style={{ flex: 1, justifyContent: "center" }} onClick={() => onAdd("expense")}>💸</button>
-        <button className="btn primary sm" style={{ flex: 1, justifyContent: "center" }} onClick={() => onAdd("saving")}>🏦</button>
-        <button className="btn primary sm" style={{ flex: 1, justifyContent: "center" }} onClick={() => onAdd("investment")}>📈</button>
+        <button className="btn soft sm" style={{ flex: 1, justifyContent: "center" }} onClick={() => onAdd("income")}>💰</button>
+        <button className="btn soft sm" style={{ flex: 1, justifyContent: "center" }} onClick={() => onAdd("expense")}>💸</button>
+        <button className="btn soft sm" style={{ flex: 1, justifyContent: "center" }} onClick={() => onAdd("saving")}>🏦</button>
+        <button className="btn soft sm" style={{ flex: 1, justifyContent: "center" }} onClick={() => onAdd("investment")}>📈</button>
       </div>
     </aside>
   );
@@ -126,7 +126,7 @@ export function DetailContent({ tab, filtered, monthly, goals, onAdd }: ContentP
   const totals = totalsByType(filtered);
   const byType = (type: TransactionType) => filtered.filter((x) => x.type === type);
   const addBtn = (
-    <button className="btn primary sm" onClick={() => onAdd(ADD_TYPE[tab])}>{t(ADD_LABEL[tab])}</button>
+    <button className="btn soft sm" onClick={() => onAdd(ADD_TYPE[tab])}>{t(ADD_LABEL[tab])}</button>
   );
 
   if (tab === "income" || tab === "expenses") {
@@ -305,7 +305,7 @@ export function DetailContent({ tab, filtered, monthly, goals, onAdd }: ContentP
                 )}
               </div>
               <div className="row mt">
-                <button className="btn primary sm" onClick={() => onAdd("saving")}>{t("＋ Setor ke goal ini")}</button>
+                <button className="btn soft sm" onClick={() => onAdd("saving")}>{t("＋ Setor ke goal ini")}</button>
               </div>
             </div>
           );
