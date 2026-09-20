@@ -1,7 +1,9 @@
-# Financial Tracker & Planner 💰
+# Tania's FinTrack 💙
+
+**🌐 Live:** https://tania-fintrack.vercel.app
 
 Website pencatatan **income & expense**, perhitungan **cash flow + grafik bulanan**, dan **planner budget & saving goals**.
-Dibangun dengan **Next.js (App Router) + React + Recharts**.
+Dibangun dengan **Next.js (App Router) + React + Recharts + Supabase**.
 
 ## Fitur
 
