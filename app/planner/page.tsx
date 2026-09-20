@@ -120,6 +120,9 @@ export default function PlannerPage() {
           {goals.map((g) => {
             const pct = g.target > 0 ? Math.min(100, (g.saved / g.target) * 100) : 0;
             const done = g.saved >= g.target && g.target > 0;
+            const viaTx = transactions
+              .filter((x) => x.type === "saving" && x.goalId === g.id)
+              .reduce((s, x) => s + x.amount, 0);
             return (
               <div key={g.id} className="stat-mini">
                 <div className="space-between">
@@ -132,6 +135,11 @@ export default function PlannerPage() {
                   <span>{t("Terkumpul")} <b>{formatIDR(g.saved)}</b> ({pct.toFixed(0)}%)</span>
                   <span>{done ? <span className="pill ok">{t("Tercapai 🎉")}</span> : <span className="sub">{t("Sisa")} {formatIDR(Math.max(0, g.target - g.saved))}</span>}</span>
                 </div>
+                {viaTx > 0 && (
+                  <div className="sub" style={{ marginTop: 4 }}>
+                    {t("Setoran tercatat via Saving: {amount}", { amount: formatIDR(viaTx) })}
+                  </div>
+                )}
                 <div className="row mt">
                   <input className="input" type="number" min={0} placeholder={t("+ Tambah tabungan (Rp)")} id={`add-${g.id}`} style={{ maxWidth: 190 }} />
                   <button

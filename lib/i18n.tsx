@@ -369,6 +369,67 @@ export const EN: Record<string, string> = {
   "Konfirmasi password tidak cocok.": "Passwords do not match.",
   "Nama tidak boleh kosong.": "Name cannot be empty.",
 
+  /* ================= TAKSONOMI 4 TIPE ================= */
+  "Periode aktif: {period} • {count} transaksi • Sisa {cashflow}":
+    "Active period: {period} • {count} transactions • Remaining {cashflow}",
+  "Masa depan": "Future share",
+  "Empat pos keuanganmu plus sisa yang belum dialokasikan.":
+    "Your four money buckets plus what's left unallocated.",
+  "Detail per pos": "Details by bucket",
+  "Income vs alokasi per bulan": "Income vs allocation per month",
+  "Bar biru = income, bar tumpuk = expense + saving + investment.":
+    "Blue bars = income, stacked bars = expense + saving + investment.",
+  "＋ Tambah {label}": "＋ Add {label}",
+  "Catat Salary, Bonus, Business, Dividend, Gift, atau income lainnya.":
+    "Record Salary, Bonus, Business, Dividend, Gift, or other income.",
+  "Sisihkan ke General Savings, Emergency Fund, atau Goal dari Planner.":
+    "Set aside into General Savings, Emergency Fund, or a Planner Goal.",
+  "Tanam ke Gold, Stocks, Bonds, Deposits, atau lainnya.":
+    "Put into Gold, Stocks, Bonds, Deposits, or others.",
+  "dari total": "of total",
+  "Transaksi terbaru": "Latest transactions",
+  "Income dikurangi seluruh alokasi — penentu kesehatan keuangan":
+    "Income minus all allocations — the key to financial health",
+  "Saving + Investment": "Saving + Investment",
+  "Sisa belum dialokasikan": "Unallocated remainder",
+  "Income − Expense − Saving − Investment": "Income − Expense − Saving − Investment",
+  "✅ Sisa {amount}. Bagus! Sisa ini bisa menambah Saving & Investment bulan ini.":
+    "✅ {amount} left. Nice! It can top up this month's Saving & Investment.",
+  "⚠️ Minus {amount}. Alokasimu melebihi income — kurangi expense atau kecilkan pos saving/investasi bulan ini.":
+    "⚠️ Short of {amount}. Your allocations exceed income — trim expenses or shrink this month's saving/investment.",
+  "Setoran tercatat: {amount}": "Logged contributions: {amount}",
+  "Setoran tercatat via Saving: {amount}": "Contributions logged via Saving: {amount}",
+  "Via kategori Goals": "Via the Goals category",
+  "Rincian per kategori saving": "Breakdown by saving category",
+  "Belum ada saving. Mulai dari Emergency Fund atau Goal. 🐖":
+    "No savings yet. Start with an Emergency Fund or a Goal. 🐖",
+  "Total investment": "Total investment",
+  "Target 10–20%": "Target 10–20%",
+  "Instrumen terbesar": "Biggest instrument",
+  "Alokasi per instrumen": "Allocation by instrument",
+  "Belum ada investasi. Mulai dari Gold atau Stocks. 💹":
+    "No investments yet. Start with Gold or Stocks. 💹",
+  "💡 Strategi: alokasikan 10–20% income ke investasi di awal bulan (pay yourself first), dan sebar ke beberapa instrumen.":
+    "💡 Strategy: allocate 10–20% of income to investments at the start of the month (pay yourself first), and spread across instruments.",
+  "＋ Setor ke goal ini": "＋ Contribute to this goal",
+  "Belum ada goal. Buat di halaman Planner. 🗺️": "No goals yet. Create one on the Planner page. 🗺️",
+  "Semua pemasukan, pengeluaran, tabungan & investasimu.":
+    "All your income, expenses, savings & investments.",
+  "Hasil filter: {income} income · {expense} expense · {saving} saving · {investment} investment • {shown} dari {total} transaksi":
+    "Filtered: {income} income · {expense} expense · {saving} saving · {investment} investment • {shown} of {total} transactions",
+  "Pilih tipe, lengkapi nominal, kategori, dan tanggal.":
+    "Pick a type, then fill in the amount, category, and date.",
+  "Klik Edit untuk koreksi, Hapus untuk menghapus. Hijau = masuk, merah = keluar, biru/teal = alokasi masa depan.":
+    "Click Edit to fix, Delete to remove. Green = in, red = out, blue/teal = future allocation.",
+  "Detail": "Details",
+  "Goal Terkait": "Linked goal",
+  "— Tanpa goal khusus —": "— No specific goal —",
+  "Belum ada goal. Buat dulu di halaman Planner.": "No goals yet. Create one on the Planner page first.",
+  "Income versus total alokasi (expense + saving + investment) 8 bulan terakhir.":
+    "Income versus total allocation (expense + saving + investment) over the last 8 months.",
+  "Kontribusi ke goal": "Goal contributions",
+  "Modal yang ditanam per instrumen": "Capital invested per instrument",
+
   /* ================= CHATBOT ================= */
   "Halo! 💙 Aku FinBuddy — bisa jawab soal income, expenses, cash flow, saving, investment, dan diskusi keputusan finansial. Coba misal \"mau beli HP 3 juta, gimana menurutmu?\"":
     "Hi! 💙 I'm FinBuddy — I can answer questions about income, expenses, cash flow, saving, investment, and financial decisions. Try: \"I want to buy a 3 million phone, what do you think?\"",
@@ -445,8 +506,8 @@ export const EN: Record<string, string> = {
     "this is still reasonable, as long as it's logged and doesn't disturb this month's Saving entry.",
   "Boleh banget kita diskusikan! 🤝 Biar pendapatku tepat, ceritakan:\n1. Rencananya apa? (misal beli HP, ambil cicilan motor, liburan)\n2. Berapa nominalnya? (misal 3 juta / cicilan 800rb per bulan)\n3. Kebutuhan mendesak atau keinginan?\n\nContoh: \"mau beli laptop 8 juta untuk kerja, gimana menurutmu?\"":
     "Let's definitely discuss it! 🤝 So my opinion is accurate, tell me:\n1. What's the plan? (e.g. buy a phone, take a motorbike loan, a holiday)\n2. How much? (e.g. 3 million / an 800k monthly installment)\n3. Urgent need or a want?\n\nExample: \"I want to buy an 8 million laptop for work, what do you think?\"",
-  "Cash flow-mu saat ini:\n• Income: {income}\n• Expense: {expense}\n• Net: {net} ({status})\n• Savings rate: {rate}% (ideal ≥ 20%)\n\n{advice}":
-    "Your cash flow right now:\n• Income: {income}\n• Expense: {expense}\n• Net: {net} ({status})\n• Savings rate: {rate}% (ideal ≥ 20%)\n\n{advice}",
+  "Cash flow-mu saat ini:\n• Income: {income}\n• Expense: {expense}\n• Saving: {saving}\n• Investment: {investment}\n• Sisa: {net} ({status})\n• Masa depan: {rate}% (ideal ≥ 20%)\n\n{advice}":
+    "Your cash flow right now:\n• Income: {income}\n• Expense: {expense}\n• Saving: {saving}\n• Investment: {investment}\n• Remaining: {net} ({status})\n• Future share: {rate}% (ideal ≥ 20%)\n\n{advice}",
   "surplus 🎉": "surplus 🎉",
   "defisit ⚠️": "deficit ⚠️",
   "Pertahankan! Sisihkan surplus ke Saving/Invest sebelum belanja keinginan.":
@@ -459,8 +520,8 @@ export const EN: Record<string, string> = {
     "Your total Saving entries: {saving} (≈ {months} months of expenses).\n\nIdeally 20% of income goes to saving+investment. {budgetNote} Open the Saving tab for each goal's progress.",
   "Perhatian budget over: {list}.": "Heads up, budget overruns: {list}.",
   "Budget kategori aman sejauh ini.": "Category budgets look safe so far.",
-  "Ringkasan investasimu:\n• Modal keluar (Invest): {out}\n• Return masuk (Investasi+Dividen): {in}\n• Net: {net}\n\nStrategi simpel: rutin tiap gajian, pisahkan dana darurat dulu 3-6x pengeluaran, baru kejar return. Atau diskusikan rencana spesifik, misal \"mau investasi 2 juta per bulan, aman nggak?\"":
-    "Your investment summary:\n• Capital out (Invest): {out}\n• Return in (Investment+Dividend): {in}\n• Net: {net}\n\nSimple strategy: be consistent every payday, set aside an emergency fund of 3–6x your expenses first, then chase returns. Or discuss a specific plan, e.g. \"I want to invest 2 million a month, is that safe?\"",
+  "Ringkasan investasimu:\n• Total ditanam (Investment): {out}\n• Dividen masuk (Dividend): {in}\n• Net: {net}\n\nStrategi simpel: rutin tiap gajian, pisahkan dana darurat dulu 3-6x pengeluaran, baru kejar return. Atau diskusikan rencana spesifik, misal \"mau investasi 2 juta per bulan, aman nggak?\"":
+    "Your investment summary:\n• Total invested (Investment): {out}\n• Dividends in (Dividend): {in}\n• Net: {net}\n\nSimple strategy: be consistent every payday, set aside an emergency fund of 3–6x your expenses first, then chase returns. Or discuss a specific plan, e.g. \"I want to invest 2 million a month, is that safe?\"",
   "Total income-mu: {income}.\nSumber terbesar biasanya Salary, dilengkapi Bonus/Dividen/Freelance. Tambah pos income baru lewat tombol + Income di side-panel. Diversifikasi income bikin cash flow lebih aman.":
     "Your total income: {income}.\nThe biggest source is usually Salary, complemented by Bonus/Dividend/Freelance. Add a new income entry via the + Income button in the side panel. Diversifying income makes cash flow safer.",
   "Ada {count} kategori over budget: {list}. Yuk geser alokasinya atau naikkan limit secara realistis di halaman Planner.":

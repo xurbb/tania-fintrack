@@ -1,18 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import {
-  EXPENSE_CATEGORIES,
-  INCOME_CATEGORIES,
-  INVESTMENT_INSTRUMENTS,
-  PAYMENT_METHODS,
-  isInvestmentCategory,
-} from "@/lib/constants";
+import { CATEGORIES_BY_TYPE, PAYMENT_METHODS, OUTGOING_TYPES, TYPE_META } from "@/lib/constants";
 import { PaymentMethod, Transaction, TransactionType } from "@/lib/types";
 import { todayISO } from "@/lib/utils";
 import { useLang } from "@/lib/i18n";
+import { useFinance } from "@/lib/store";
 
 export interface TxFormValue extends Omit<Transaction, "id"> {}
+
+const TYPE_ORDER: TransactionType[] = ["income", "expense", "saving", "investment"];
 
 export default function TransactionForm({
   initial,
@@ -26,23 +23,27 @@ export default function TransactionForm({
   onCancel?: () => void;
 }) {
   const { t } = useLang();
+  const { goals } = useFinance();
   const [type, setType] = useState<TransactionType>(initial?.type ?? presetType ?? "expense");
   const [amount, setAmount] = useState<string>(initial ? String(initial.amount) : "");
-  const [category, setCategory] = useState(initial?.category ?? "Food");
+  const [category, setCategory] = useState(
+    initial?.category ?? CATEGORIES_BY_TYPE[initial?.type ?? presetType ?? "expense"][0]
+  );
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
-    initial?.paymentMethod ?? "Cash"
+    initial?.paymentMethod ?? "Transfer"
   );
   const [date, setDate] = useState(initial?.date ?? todayISO());
   const [note, setNote] = useState(initial?.note ?? "");
-  const [instrument, setInstrument] = useState(initial?.instrument ?? "Gold");
+  const [goalId, setGoalId] = useState(initial?.goalId ?? "");
 
-  const cats = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-  const isInvest = isInvestmentCategory(category);
+  const cats = CATEGORIES_BY_TYPE[type];
+  const isOutgoing = (OUTGOING_TYPES as string[]).includes(type);
+  const showGoalPicker = type === "saving" && category === "Goals";
 
-  // reset kategori saat tipe berubah
   const handleType = (next: TransactionType) => {
     setType(next);
-    setCategory(next === "income" ? "Salary" : "Food");
+    setCategory(CATEGORIES_BY_TYPE[next][0]);
+    setGoalId("");
   };
 
   const submit = (e: React.FormEvent) => {
@@ -60,8 +61,8 @@ export default function TransactionForm({
       type,
       amount: Math.round(amt),
       category,
-      paymentMethod: type === "expense" ? paymentMethod : undefined,
-      instrument: isInvest ? instrument : undefined,
+      paymentMethod: isOutgoing ? paymentMethod : undefined,
+      goalId: showGoalPicker && goalId ? goalId : undefined,
       date,
       note: note.trim(),
     });
@@ -69,15 +70,15 @@ export default function TransactionForm({
 
   return (
     <form onSubmit={submit}>
-      <div className="row" style={{ marginBottom: 12 }}>
-        {(["expense", "income"] as TransactionType[]).map((kind) => (
+      <div className="grid grid-2" style={{ marginBottom: 12 }}>
+        {TYPE_ORDER.map((kind) => (
           <button
             key={kind}
             type="button"
             className={`btn ${type === kind ? "primary" : ""}`}
             onClick={() => handleType(kind)}
           >
-            {kind === "income" ? t("⬆ Income") : t("⬇ Expense")}
+            {TYPE_META[kind].icon} {t(TYPE_META[kind].label)}
           </button>
         ))}
       </div>
@@ -106,13 +107,11 @@ export default function TransactionForm({
           />
         </div>
         <div>
-          <label className="lbl">
-            {type === "income" ? t("Kategori Income") : t("Kategori Expense")}
-          </label>
+          <label className="lbl">{t(TYPE_META[type].label)}</label>
           <select
             className="select"
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(e) => { setCategory(e.target.value); setGoalId(""); }}
           >
             {cats.map((c) => (
               <option key={c} value={c}>
@@ -121,23 +120,7 @@ export default function TransactionForm({
             ))}
           </select>
         </div>
-        {isInvest && (
-          <div>
-            <label className="lbl">{t("Bentuk Investasi")}</label>
-            <select
-              className="select"
-              value={instrument}
-              onChange={(e) => setInstrument(e.target.value)}
-            >
-              {INVESTMENT_INSTRUMENTS.map((m) => (
-                <option key={m} value={m}>
-                  {t(m)}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        {type === "expense" && (
+        {isOutgoing && (
           <div>
             <label className="lbl">{t("Metode Pembayaran")}</label>
             <select
@@ -151,6 +134,28 @@ export default function TransactionForm({
                 </option>
               ))}
             </select>
+          </div>
+        )}
+        {showGoalPicker && (
+          <div style={{ gridColumn: "1 / -1" }}>
+            <label className="lbl">{t("Goal Terkait")}</label>
+            <select
+              className="select"
+              value={goalId}
+              onChange={(e) => setGoalId(e.target.value)}
+            >
+              <option value="">{t("— Tanpa goal khusus —")}</option>
+              {goals.map((g) => (
+                <option key={g.id} value={g.id}>
+                  🎯 {g.name}
+                </option>
+              ))}
+            </select>
+            {goals.length === 0 && (
+              <p className="sub" style={{ margin: "6px 0 0" }}>
+                {t("Belum ada goal. Buat dulu di halaman Planner.")}
+              </p>
+            )}
           </div>
         )}
         <div style={{ gridColumn: "1 / -1" }}>

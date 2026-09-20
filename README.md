@@ -120,21 +120,33 @@ Update aplikasi **tidak menghapus data** — data tersimpan di database Supabase
 
 ```
 app/
-  layout.tsx        # Layout + FinanceProvider + Navbar
-  page.tsx          # Dashboard + cash flow chart
-  globals.css       # Styling
+  layout.tsx        # Layout + providers + footer
+  page.tsx          # Dashboard: 5 KPI (Income/Expense/Saving/Investment/Sisa)
+  globals.css       # Design system biru + beige
   transactions/page.tsx
   planner/page.tsx
+  profile/page.tsx
+  login/page.tsx
 components/
-  Navbar.tsx
-  TransactionForm.tsx
-  CashflowChart.tsx (recharts BarChart)
-  CategoryChart.tsx (recharts PieChart)
+  Navbar.tsx        # Navigasi + menu hamburger + pemilih bahasa
+  TransactionForm.tsx  # Form 4 tipe + metode bayar + tautan goal
+  DetailSidePanel.tsx  # Side-panel 5 tab
+  CashflowChart.tsx    # Income vs alokasi (stacked)
+  CategoryChart.tsx
+  FinanceChatbot.tsx   # Diskusi + pendapat keputusan finansial
+  AuthGate.tsx
+  LangSwitch.tsx
 lib/
-  types.ts
-  constants.ts      # kategori + payment methods + warna
-  utils.ts          # formatIDR, monthKey, dll
-  store.tsx         # Context + localStorage + seed data
+  types.ts          # TransactionType: income|expense|saving|investment
+  constants.ts      # Kategori per tipe + warna + metode bayar
+  taxonomy.ts       # totalsByType + normalizeTx (data lama otomatis dipetakan)
+  store.tsx         # Context + Supabase/localStorage
+  i18n.tsx          # Kamus Indonesia <-> English
+  auth.tsx
+  supabase.ts
+supabase-schema.sql            # Skema penuh (untuk project baru)
+supabase-migration-instrument.sql  # Tambah kolom instrument (project lama)
+supabase-migration-4types.sql      # Check 4 tipe + kolom goal_id (project lama)
 ```
 
 ## Kustomisasi cepat

@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Budget, SavingGoal, Transaction } from "./types";
 import { uid } from "./utils";
+import { normalizeAll, normalizeTx } from "./taxonomy";
 import { isCloudEnabled, supabase } from "./supabase";
 import { useAuth } from "./auth";
 
@@ -30,14 +31,16 @@ const BUDGET_KEY = "ft_budgets_v1";
 const GOAL_KEY = "ft_goals_v1";
 
 /**
- * Menjadi false otomatis kalau kolom `instrument` belum ada di database,
- * supaya aplikasi tidak error sebelum migrasi dijalankan.
+ * Menjadi false otomatis kalau kolom `instrument` / `goal_id` belum ada di
+ * database, supaya aplikasi tidak error sebelum migrasi dijalankan.
  */
 let instrumentSupported = true;
+let goalSupported = true;
 
 function txPayload(t: Omit<Transaction, "id">, userId: string): Record<string, unknown> {
   const row: Record<string, unknown> = { ...txToRow(t, userId) };
   if (instrumentSupported) row.instrument = t.instrument ?? null;
+  if (goalSupported) row.goal_id = t.goalId ?? null;
   return row;
 }
 
@@ -45,26 +48,28 @@ function txPayload(t: Omit<Transaction, "id">, userId: string): Record<string, u
 
 interface TxRow {
   id: string;
-  type: "income" | "expense";
+  type: string;
   amount: number;
   category: string;
   payment_method: string | null;
   instrument?: string | null;
+  goal_id?: string | null;
   date: string;
   note: string | null;
 }
 
 function rowToTx(r: TxRow): Transaction {
-  return {
+  return normalizeTx({
     id: r.id,
-    type: r.type,
+    type: r.type as Transaction["type"],
     amount: Number(r.amount),
     category: r.category,
     paymentMethod: (r.payment_method ?? undefined) as Transaction["paymentMethod"],
+    goalId: r.goal_id ?? undefined,
     instrument: r.instrument ?? undefined,
     date: r.date,
     note: r.note ?? "",
-  };
+  });
 }
 
 function txToRow(t: Omit<Transaction, "id">, userId: string) {
@@ -73,7 +78,7 @@ function txToRow(t: Omit<Transaction, "id">, userId: string) {
     type: t.type,
     amount: Math.round(t.amount),
     category: t.category,
-    payment_method: t.type === "expense" ? t.paymentMethod ?? null : null,
+    payment_method: t.type === "income" ? null : (t.paymentMethod ?? null),
     date: t.date,
     note: t.note ?? "",
   };
@@ -90,19 +95,22 @@ function seedTransactions(): Transaction[] {
   return [
     { id: uid(), type: "income", amount: 8500000, category: "Salary", date: iso(0, 1), note: "Gaji bulanan" },
     { id: uid(), type: "income", amount: 1200000, category: "Bonus", date: iso(0, 5), note: "Bonus proyek" },
-    { id: uid(), type: "income", amount: 450000, category: "Dividen", instrument: "Stock", date: iso(0, 8), note: "Dividen saham" },
+    { id: uid(), type: "income", amount: 450000, category: "Dividend", date: iso(0, 8), note: "Dividen saham" },
     { id: uid(), type: "expense", amount: 1500000, category: "Housing", paymentMethod: "Transfer", date: iso(0, 2), note: "Kontrakan" },
-    { id: uid(), type: "expense", amount: 650000, category: "Food", paymentMethod: "QRIS", date: iso(0, 3), note: "Groceries + jajan" },
+    { id: uid(), type: "expense", amount: 650000, category: "Food & Dining", paymentMethod: "QRIS", date: iso(0, 3), note: "Groceries + jajan" },
     { id: uid(), type: "expense", amount: 400000, category: "Transport", paymentMethod: "Cash", date: iso(0, 4), note: "Bensin & parkir" },
-    { id: uid(), type: "expense", amount: 1000000, category: "Invest", instrument: "Mutual Fund", paymentMethod: "Transfer", date: iso(0, 6), note: "Reksadana rutin" },
-    { id: uid(), type: "expense", amount: 500000, category: "Saving", paymentMethod: "Transfer", date: iso(0, 9), note: "Tabungan dana darurat" },
-    { id: uid(), type: "expense", amount: 500000, category: "Debt", paymentMethod: "Transfer", date: iso(0, 7), note: "Cicilan" },
+    { id: uid(), type: "expense", amount: 350000, category: "Bills & Utilities", paymentMethod: "Transfer", date: iso(0, 5), note: "Listrik + internet" },
+    { id: uid(), type: "saving", amount: 750000, category: "Emergency Fund", paymentMethod: "Transfer", date: iso(0, 9), note: "Tabungan dana darurat" },
+    { id: uid(), type: "saving", amount: 500000, category: "General Savings", paymentMethod: "Transfer", date: iso(0, 7), note: "Nabung rutin" },
+    { id: uid(), type: "investment", amount: 1000000, category: "Stocks", paymentMethod: "Transfer", date: iso(0, 6), note: "Saham rutin" },
+    { id: uid(), type: "investment", amount: 800000, category: "Gold", paymentMethod: "Transfer", date: iso(0, 11), note: "Tabungan emas" },
+    { id: uid(), type: "expense", amount: 500000, category: "Financial Fees", paymentMethod: "Transfer", date: iso(0, 12), note: "Cicilan" },
     { id: uid(), type: "income", amount: 8000000, category: "Salary", date: iso(1, 1), note: "Gaji bulan lalu" },
     { id: uid(), type: "expense", amount: 1800000, category: "Housing", paymentMethod: "Transfer", date: iso(1, 2), note: "Kontrakan" },
-    { id: uid(), type: "expense", amount: 900000, category: "Food", paymentMethod: "QRIS", date: iso(1, 10), note: "Makan" },
-    { id: uid(), type: "expense", amount: 800000, category: "Saving", paymentMethod: "Transfer", date: iso(1, 12), note: "Nabung rutin" },
-    { id: uid(), type: "expense", amount: 1200000, category: "Invest", instrument: "Gold", paymentMethod: "Transfer", date: iso(1, 18), note: "Beli emas antam" },
-    { id: uid(), type: "expense", amount: 300000, category: "Hobby", paymentMethod: "Cash", date: iso(1, 15), note: "Hobi" },
+    { id: uid(), type: "expense", amount: 900000, category: "Food & Dining", paymentMethod: "QRIS", date: iso(1, 10), note: "Makan" },
+    { id: uid(), type: "saving", amount: 800000, category: "General Savings", paymentMethod: "Transfer", date: iso(1, 12), note: "Nabung rutin" },
+    { id: uid(), type: "investment", amount: 1200000, category: "Gold", paymentMethod: "Transfer", date: iso(1, 18), note: "Beli emas" },
+    { id: uid(), type: "expense", amount: 300000, category: "Entertainment & Hobbies", paymentMethod: "Cash", date: iso(1, 15), note: "Hobi" },
   ];
 }
 
@@ -123,20 +131,26 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
 
     const baseCols = "id,type,amount,category,payment_method,date,note";
+    const optCols =
+      `${instrumentSupported ? ",instrument" : ""}${goalSupported ? ",goal_id" : ""}`;
     const first = await supabase
       .from("transactions")
-      .select(instrumentSupported ? `${baseCols},instrument` : baseCols)
+      .select(`${baseCols}${optCols}`)
       .order("date", { ascending: false });
 
     let rows: TxRow[] | null = (first.data as unknown as TxRow[]) ?? null;
 
-    // Kalau kolom `instrument` belum ada di database, aplikasi tetap jalan
-    // (fitur bentuk investasi otomatis nonaktif sampai migrasi dijalankan).
-    if (first.error && instrumentSupported) {
-      instrumentSupported = false;
+    // Kalau kolom opsional belum ada di database, coba tanpa kolom itu
+    // (fitur terkait otomatis nonaktif sampai migrasi dijalankan).
+    if (first.error && (instrumentSupported || goalSupported)) {
+      const msg = `${first.error.message ?? ""} ${JSON.stringify(first.error)}`;
+      if (instrumentSupported && msg.includes("instrument")) instrumentSupported = false;
+      if (goalSupported && msg.includes("goal_id")) goalSupported = false;
+      const retryCols =
+        `${instrumentSupported ? ",instrument" : ""}${goalSupported ? ",goal_id" : ""}`;
       const retry = await supabase
         .from("transactions")
-        .select(baseCols)
+        .select(`${baseCols}${retryCols}`)
         .order("date", { ascending: false });
       rows = (retry.data as unknown as TxRow[]) ?? null;
     }
@@ -180,14 +194,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       const rawTx = localStorage.getItem(TX_KEY);
       const rawB = localStorage.getItem(BUDGET_KEY);
       const rawG = localStorage.getItem(GOAL_KEY);
-      setTransactions(rawTx ? JSON.parse(rawTx) : seedTransactions());
+      setTransactions(rawTx ? normalizeAll(JSON.parse(rawTx) as Transaction[]) : seedTransactions());
       setBudgets(
         rawB
           ? JSON.parse(rawB)
           : [
-              { category: "Food", limit: 1500000 },
+              { category: "Food & Dining", limit: 1500000 },
               { category: "Transport", limit: 800000 },
-              { category: "Hobby", limit: 500000 },
+              { category: "Entertainment & Hobbies", limit: 500000 },
             ]
       );
       setGoals(
@@ -222,6 +236,29 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     void reload();
   };
 
+  // Tulis transaksi dengan fallback: kalau kolom opsional belum ada di
+  // database, nonaktifkan lalu ulangi sekali tanpa kolom itu.
+  const saveTx = async (
+    op: () => PromiseLike<{ error: { message: string } | null }>,
+    aksi: string
+  ) => {
+    let { error } = await op();
+    if (error) {
+      const msg = error.message ?? "";
+      let retried = false;
+      if (instrumentSupported && msg.includes("instrument")) {
+        instrumentSupported = false;
+        retried = true;
+      }
+      if (goalSupported && msg.includes("goal_id")) {
+        goalSupported = false;
+        retried = true;
+      }
+      if (retried) ({ error } = await op());
+    }
+    if (error) gagal(aksi, error.message);
+  };
+
   const value = useMemo<FinanceContextValue>(
     () => ({
       transactions,
@@ -235,23 +272,24 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         const optimistic: Transaction = { ...t, id };
         setTransactions((p) => [optimistic, ...p]);
 
-        if (cloud && user && supabase) {
-          supabase
-            .from("transactions")
-            .insert({ id, ...txPayload(t, user.id) })
-            .then(({ error }) => { if (error) gagal("menyimpan transaksi", error.message); });
+        const db = supabase;
+        if (cloud && user && db) {
+          void saveTx(
+            () => db.from("transactions").insert({ id, ...txPayload(t, user.id) }),
+            "menyimpan transaksi"
+          );
         }
       },
 
       updateTransaction: (id, t) => {
         setTransactions((p) => p.map((x) => (x.id === id ? { ...t, id } : x)));
 
-        if (cloud && user && supabase) {
-          supabase
-            .from("transactions")
-            .update(txPayload(t, user.id))
-            .eq("id", id)
-            .then(({ error }) => { if (error) gagal("memperbarui transaksi", error.message); });
+        const db = supabase;
+        if (cloud && user && db) {
+          void saveTx(
+            () => db.from("transactions").update(txPayload(t, user.id)).eq("id", id),
+            "memperbarui transaksi"
+          );
         }
       },
 
@@ -282,11 +320,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       importData: (tx) => {
         setTransactions(tx);
 
-        if (cloud && user && supabase) {
-          supabase
-            .from("transactions")
-            .insert(tx.map((t) => ({ id: t.id || uid(), ...txPayload(t, user.id) })))
-            .then(({ error }) => { if (error) gagal("mengimpor data", error.message); });
+        const db = supabase;
+        if (cloud && user && db) {
+          void saveTx(
+            () => db.from("transactions").insert(tx.map((x) => ({ id: x.id || uid(), ...txPayload(x, user.id) }))),
+            "mengimpor data"
+          );
         }
       },
 
@@ -354,7 +393,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         }
       },
     }),
-    [transactions, budgets, goals, loading, cloud, user, reload]
+    [transactions, budgets, goals, loading, cloud, user, reload, saveTx]
   );
 
   return <FinanceContext.Provider value={value}>{children}</FinanceContext.Provider>;

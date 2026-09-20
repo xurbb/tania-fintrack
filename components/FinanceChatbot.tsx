@@ -10,6 +10,7 @@ interface Msg { role: "bot" | "user"; text: string; }
 
 interface Ctx {
   totalIn: number; totalOut: number; net: number; rate: number;
+  totalExpense: number; totalSaveTx: number; totalInvTx: number;
   topExpense: string; topExpenseAmt: number;
   totalSaving: number; investOut: number; investIn: number;
   overBudgets: string[];
@@ -81,7 +82,7 @@ const T = {
   askDetail:
     "Boleh banget kita diskusikan! 🤝 Biar pendapatku tepat, ceritakan:\n1. Rencananya apa? (misal beli HP, ambil cicilan motor, liburan)\n2. Berapa nominalnya? (misal 3 juta / cicilan 800rb per bulan)\n3. Kebutuhan mendesak atau keinginan?\n\nContoh: \"mau beli laptop 8 juta untuk kerja, gimana menurutmu?\"",
   cf:
-    "Cash flow-mu saat ini:\n• Income: {income}\n• Expense: {expense}\n• Net: {net} ({status})\n• Savings rate: {rate}% (ideal ≥ 20%)\n\n{advice}",
+    "Cash flow-mu saat ini:\n• Income: {income}\n• Expense: {expense}\n• Saving: {saving}\n• Investment: {investment}\n• Sisa: {net} ({status})\n• Masa depan: {rate}% (ideal ≥ 20%)\n\n{advice}",
   cfSurplus: "surplus 🎉",
   cfDeficit: "defisit ⚠️",
   cfAdviceGood: "Pertahankan! Sisihkan surplus ke Saving/Invest sebelum belanja keinginan.",
@@ -93,7 +94,7 @@ const T = {
   savingBudgetOver: "Perhatian budget over: {list}.",
   savingBudgetOk: "Budget kategori aman sejauh ini.",
   investInfo:
-    "Ringkasan investasimu:\n• Modal keluar (Invest): {out}\n• Return masuk (Investasi+Dividen): {in}\n• Net: {net}\n\nStrategi simpel: rutin tiap gajian, pisahkan dana darurat dulu 3-6x pengeluaran, baru kejar return. Atau diskusikan rencana spesifik, misal \"mau investasi 2 juta per bulan, aman nggak?\"",
+    "Ringkasan investasimu:\n• Total ditanam (Investment): {out}\n• Dividen masuk (Dividend): {in}\n• Net: {net}\n\nStrategi simpel: rutin tiap gajian, pisahkan dana darurat dulu 3-6x pengeluaran, baru kejar return. Atau diskusikan rencana spesifik, misal \"mau investasi 2 juta per bulan, aman nggak?\"",
   incomeInfo:
     "Total income-mu: {income}.\nSumber terbesar biasanya Salary, dilengkapi Bonus/Dividen/Freelance. Tambah pos income baru lewat tombol + Income di side-panel. Diversifikasi income bikin cash flow lebih aman.",
   budgetInfoOver:
@@ -304,7 +305,7 @@ function botAnswer(
 
   const parsed = parseAmount(input);
   const installment = /cicil|kredit|angsur|tenor|per bulan|\/bln|\bbln\b|installment|\/month/.test(q) && !/\bdp\b|down payment|sekaligus|cash|tunai|lunas/.test(q);
-  const decisionSignal = /beli|membeli|ambil|mengambil|purchase|\bbuy\b|bayar|membayar|cicil|mencicil|kredit|ngutang|utang|\bdp\b|tenor|angsur|libur|worth|layak|pantas|mending|sebaiknya|menurutmu|pendapatmu|setuju|checkout|afford|should i/.test(q);
+  const decisionSignal = /beli|membeli|ambil|mengambil|purchase|\bbuy\b|bayar|membayar|cicil|mencicil|kredit|ngutang|utang|\bdp\b|tenor|angsur|libur|nabung|menabung|tabung|darurat|invest|deposit|emas|gold|saham|stock|obligasi|bond|reksa|worth|layak|pantas|mending|sebaiknya|menurutmu|pendapatmu|setuju|checkout|afford|should i/.test(q);
   const opinionSeeking = /gimana|bagaimana|menurut|pendapat|worth|layak|pantas|boleh|aman|mending|sebaiknya|setuju|oke|saran|what do you think|should i/.test(q);
   const amounts = parseAllAmounts(input);
 
@@ -354,7 +355,9 @@ function botAnswer(
     return {
       reply: t(T.cf, {
         income: formatIDR(ctx.totalIn),
-        expense: formatIDR(ctx.totalOut),
+        expense: formatIDR(ctx.totalExpense),
+        saving: formatIDR(ctx.totalSaveTx),
+        investment: formatIDR(ctx.totalInvTx),
         net: formatIDR(ctx.net),
         status: ctx.net >= 0 ? t(T.cfSurplus) : t(T.cfDeficit),
         rate: ctx.rate.toFixed(1),
@@ -419,16 +422,19 @@ export default function FinanceChatbot() {
 
   const ctx: Ctx = useMemo(() => {
     const totalIn = transactions.filter((x) => x.type === "income").reduce((s, x) => s + x.amount, 0);
-    const totalOut = transactions.filter((x) => x.type === "expense").reduce((s, x) => s + x.amount, 0);
-    const net = totalIn - totalOut;
+    const totalExpense = transactions.filter((x) => x.type === "expense").reduce((s, x) => s + x.amount, 0);
+    const totalSaveTx = transactions.filter((x) => x.type === "saving").reduce((s, x) => s + x.amount, 0);
+    const totalInvTx = transactions.filter((x) => x.type === "investment").reduce((s, x) => s + x.amount, 0);
+    const totalOut = totalExpense + totalSaveTx + totalInvTx;
+    const net = totalIn - totalOut; // sisa
     const rate = totalIn > 0 ? Math.max(0, (net / totalIn) * 100) : 0;
     const byCat = new Map<string, number>();
     transactions.filter((x) => x.type === "expense").forEach((x) => byCat.set(x.category, (byCat.get(x.category) ?? 0) + x.amount));
     const top = Array.from(byCat.entries()).sort((a, b) => b[1] - a[1])[0];
-    const totalSaving = transactions.filter((x) => x.category === "Saving").reduce((s, x) => s + x.amount, 0)
+    const totalSaving = transactions.filter((x) => x.type === "saving").reduce((s, x) => s + x.amount, 0)
       + goals.reduce((s, g) => s + g.saved, 0);
-    const investOut = transactions.filter((x) => x.category === "Invest").reduce((s, x) => s + x.amount, 0);
-    const investIn = transactions.filter((x) => x.category === "Investasi" || x.category === "Dividen").reduce((s, x) => s + x.amount, 0);
+    const investOut = transactions.filter((x) => x.type === "investment").reduce((s, x) => s + x.amount, 0);
+    const investIn = transactions.filter((x) => x.type === "income" && x.category === "Dividend").reduce((s, x) => s + x.amount, 0);
     const cur = new Date().toISOString().slice(0, 7);
     const spendByCat = new Map<string, number>();
     transactions.filter((x) => x.type === "expense" && monthKey(x.date) === cur)
@@ -438,9 +444,11 @@ export default function FinanceChatbot() {
     const monthlyIncome = Math.round(totalIn / monthCount);
     const monthlyOut = Math.round(totalOut / monthCount);
     const monthlyNet = monthlyIncome - monthlyOut;
-    const emergencyMonths = monthlyOut > 0 ? totalSaving / monthlyOut : 0;
+    const monthlyExpense = Math.round(totalExpense / monthCount);
+    const emergencyMonths = monthlyExpense > 0 ? totalSaving / monthlyExpense : 0;
     return {
       totalIn, totalOut, net, rate,
+      totalExpense, totalSaveTx, totalInvTx,
       topExpense: top?.[0] ?? "-", topExpenseAmt: top?.[1] ?? 0,
       totalSaving, investOut, investIn, overBudgets,
       monthlyIncome, monthlyNet, monthlyOut, emergencyMonths,

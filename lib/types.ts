@@ -1,4 +1,4 @@
-export type TransactionType = "income" | "expense";
+export type TransactionType = "income" | "expense" | "saving" | "investment";
 
 export type PaymentMethod = "Cash" | "QRIS" | "Transfer" | "E-Wallet" | "Kartu Kredit";
 
@@ -7,8 +7,9 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   category: string;
-  paymentMethod?: PaymentMethod; // hanya untuk expense
-  instrument?: string; // hanya untuk kategori investasi (Gold, Stock, dst)
+  paymentMethod?: PaymentMethod; // untuk expense, saving, dan investment
+  goalId?: string; // hanya untuk saving kategori "Goals" — terhubung ke SavingGoal
+  instrument?: string; // LEGACY: bentuk investasi model lama, dipertahankan agar data lama tetap terbaca
   date: string; // ISO yyyy-mm-dd
   note: string;
 }
