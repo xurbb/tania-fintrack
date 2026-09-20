@@ -94,14 +94,14 @@ export default function TransactionsPage() {
           {(Object.keys(CATEGORIES_BY_TYPE) as TransactionType[]).map((kind) => (
             <button
               key={kind}
-              className="btn sand"
+              className="btn sand-fade"
               onClick={() => openAdd(kind)}
             >
               ＋ {t(TYPE_META[kind].label)}
             </button>
           ))}
-          <button className="btn ghost-light" onClick={exportCSV}>{t("⬇ Export CSV")}</button>
-          <button className="btn ghost-light" onClick={() => { if (confirm(t("Hapus semua transaksi?"))) clearAll(); }}>{t("🗑 Hapus Semua")}</button>
+          <button className="btn sand-fade" onClick={exportCSV}>{t("⬇ Export CSV")}</button>
+          <button className="btn sand-fade" onClick={() => { if (confirm(t("Hapus semua transaksi?"))) clearAll(); }}>{t("🗑 Hapus Semua")}</button>
         </div>
       </header>
 
