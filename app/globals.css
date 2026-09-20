@@ -201,6 +201,46 @@ a { color: inherit; text-decoration: none; }
 .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; position: relative; z-index: 1; }
 .hero .select { max-width: 210px; background: rgba(255, 253, 247, 0.96); }
 
+/* Baris 4 tombol tambah di hero dashboard.
+   Desktop: menyatu dengan hero-actions (display: contents).
+   Mobile: satu baris horizontal yang bisa digeser. */
+.hero-add-row { display: contents; }
+.hero-add { white-space: nowrap; }
+.hero-add:hover, .hero-add:active, .hero-add:focus-visible {
+  background: linear-gradient(180deg, #ecd9b4, var(--sand));
+  border-color: var(--sand-deep);
+  color: var(--navy-dark);
+}
+
+@media (max-width: 640px) {
+  .hero { padding: 20px 18px; }
+  /* Meta info selalu satu baris; geser horizontal kalau teksnya panjang */
+  .hero-meta {
+    white-space: nowrap;
+    overflow-x: auto;
+    font-size: 12.5px;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .hero-meta::-webkit-scrollbar { display: none; }
+  .hero-actions .select { flex: 1 1 100%; max-width: none; }
+  .hero-add-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .hero-add-row::-webkit-scrollbar { display: none; }
+  .hero-add {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
 /* ---------- Section headers (sistematis) ---------- */
 .section-head { display: flex; align-items: flex-start; gap: 12px; margin: 28px 0 14px; }
 .section-num {

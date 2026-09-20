@@ -69,7 +69,7 @@ export default function Dashboard() {
             ? t("Halo {name}! Ini ringkasan keuanganmu.", { name })
             : t("Halo! Ini ringkasan keuanganmu.")}
         </h1>
-        <p>
+        <p className="hero-meta">
           {t("Periode aktif: {period} • {count} transaksi • Sisa {cashflow}", {
             period: periodLabel,
             count: filtered.length,
@@ -83,10 +83,12 @@ export default function Dashboard() {
               <option key={m} value={m}>{monthLabel(m, lang)}</option>
             ))}
           </select>
-          <button className="btn sand" onClick={() => setModalType("income")}>💰 {t("Income")}</button>
-          <button className="btn ghost-light" onClick={() => setModalType("expense")}>💸 {t("Expense")}</button>
-          <button className="btn ghost-light" onClick={() => setModalType("saving")}>🏦 {t("Saving")}</button>
-          <button className="btn ghost-light" onClick={() => setModalType("investment")}>📈 {t("Investment")}</button>
+          <div className="hero-add-row">
+            <button className="btn ghost-light hero-add" onClick={() => setModalType("income")}>💰 {t("Income")}</button>
+            <button className="btn ghost-light hero-add" onClick={() => setModalType("expense")}>💸 {t("Expense")}</button>
+            <button className="btn ghost-light hero-add" onClick={() => setModalType("saving")}>🏦 {t("Saving")}</button>
+            <button className="btn ghost-light hero-add" onClick={() => setModalType("investment")}>📈 {t("Investment")}</button>
+          </div>
         </div>
       </header>
 
