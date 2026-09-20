@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import { useLang } from "@/lib/i18n";
 
 /**
  * Penjaga halaman:
@@ -11,6 +12,7 @@ import { useAuth } from "@/lib/auth";
  */
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, cloud } = useAuth();
+  const { t } = useLang();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -25,8 +27,8 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       <div className="container" style={{ paddingTop: 60 }}>
         <div className="card" style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>💙</div>
-          <b>Memuat data keuanganmu...</b>
-          <p className="sub" style={{ marginTop: 6 }}>Menyambungkan ke database.</p>
+          <b>{t("Memuat data keuanganmu...")}</b>
+          <p className="sub" style={{ marginTop: 6 }}>{t("Menyambungkan ke database.")}</p>
         </div>
       </div>
     );

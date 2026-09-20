@@ -106,6 +106,35 @@ a { color: inherit; text-decoration: none; }
   display: flex; flex-direction: column; gap: 8px;
 }
 
+/* Pemilih bahasa */
+.lang-switch {
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 3px; border-radius: 10px;
+  background: rgba(255, 253, 248, 0.14);
+  border: 1px solid rgba(255, 253, 248, 0.28);
+}
+.lang-btn {
+  border: none; background: transparent; color: #cfdcf0;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.04em;
+  padding: 5px 9px; border-radius: 7px; cursor: pointer;
+}
+.lang-btn:hover { color: #fff; }
+.lang-btn.active { background: var(--sand); color: var(--navy-dark); }
+.lang-switch.compact { margin-left: auto; }
+
+/* Varian untuk latar terang */
+.lang-switch.light { background: var(--beige-soft); border-color: var(--sand); }
+.lang-switch.light .lang-btn { color: var(--navy); }
+.lang-switch.light .lang-btn:hover { color: var(--navy-dark); }
+.lang-switch.light .lang-btn.active { background: var(--navy); color: #fdf8ec; }
+
+.nav-drawer-lang {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 4px; padding: 10px 14px;
+  border-radius: 12px; background: rgba(255, 253, 248, 0.08);
+  color: #cfdcf0; font-size: 15px; font-weight: 600;
+}
+
 @media (max-width: 960px) {
   .nav-links { display: none; }
   .nav-burger { display: inline-flex; }

@@ -12,8 +12,11 @@ import {
   X,
   LogOut,
   CloudOff,
+  Languages,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useLang } from "@/lib/i18n";
+import LangSwitch from "@/components/LangSwitch";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -26,6 +29,7 @@ export default function Navbar() {
   const path = usePathname();
   const router = useRouter();
   const { user, cloud, signOut } = useAuth();
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
 
   const is = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
@@ -45,6 +49,7 @@ export default function Navbar() {
     <>
       <nav className="navbar">
         <div className="navbar-inner">
+          {/* Header: nama web + subtitle — sengaja tidak diterjemahkan */}
           <Link href="/" className="brand">
             <span className="brand-mark">💙</span>
             <span>
@@ -66,11 +71,13 @@ export default function Navbar() {
               );
             })}
 
+            <LangSwitch />
+
             {cloud && user && (
               <span className="nav-account">
                 <span className="nav-email" title={user.email ?? ""}>{user.email}</span>
                 <button className="btn ghost-light sm" onClick={logout}>
-                  <LogOut size={14} /> Keluar
+                  <LogOut size={14} /> {t("Keluar")}
                 </button>
               </span>
             )}
@@ -80,7 +87,7 @@ export default function Navbar() {
           <button
             className="nav-burger"
             onClick={() => setOpen((o) => !o)}
-            aria-label={open ? "Tutup menu" : "Buka menu"}
+            aria-label={open ? t("Tutup menu") : t("Buka menu")}
             aria-expanded={open}
           >
             {open ? <X size={20} /> : <Menu size={20} />}
@@ -104,11 +111,18 @@ export default function Navbar() {
               );
             })}
 
+            <div className="nav-drawer-lang">
+              <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+                <Languages size={16} /> {t("Bahasa")}
+              </span>
+              <LangSwitch compact />
+            </div>
+
             {cloud && user && (
               <div className="nav-drawer-account">
                 <div className="nav-email" style={{ maxWidth: "100%" }}>{user.email}</div>
                 <button className="btn ghost-light sm" style={{ width: "100%", justifyContent: "center" }} onClick={logout}>
-                  <LogOut size={14} /> Keluar
+                  <LogOut size={14} /> {t("Keluar")}
                 </button>
               </div>
             )}
@@ -120,7 +134,8 @@ export default function Navbar() {
         <Link href="/login" className="setup-strip">
           <CloudOff size={14} />
           <span>
-            <b>Mode lokal</b> — data belum tersinkron antar device. Klik di sini untuk mengaktifkan sinkronisasi.
+            <b>{t("Mode lokal")}</b>{" "}
+            {t("— data belum tersinkron antar device. Klik di sini untuk mengaktifkan sinkronisasi.")}
           </span>
         </Link>
       )}

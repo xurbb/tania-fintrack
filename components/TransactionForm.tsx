@@ -10,6 +10,7 @@ import {
 } from "@/lib/constants";
 import { PaymentMethod, Transaction, TransactionType } from "@/lib/types";
 import { todayISO } from "@/lib/utils";
+import { useLang } from "@/lib/i18n";
 
 export interface TxFormValue extends Omit<Transaction, "id"> {}
 
@@ -24,6 +25,7 @@ export default function TransactionForm({
   onSubmit: (v: TxFormValue) => void;
   onCancel?: () => void;
 }) {
+  const { t } = useLang();
   const [type, setType] = useState<TransactionType>(initial?.type ?? presetType ?? "expense");
   const [amount, setAmount] = useState<string>(initial ? String(initial.amount) : "");
   const [category, setCategory] = useState(initial?.category ?? "Food");
@@ -38,20 +40,20 @@ export default function TransactionForm({
   const isInvest = isInvestmentCategory(category);
 
   // reset kategori saat tipe berubah
-  const handleType = (t: TransactionType) => {
-    setType(t);
-    setCategory(t === "income" ? "Salary" : "Food");
+  const handleType = (next: TransactionType) => {
+    setType(next);
+    setCategory(next === "income" ? "Salary" : "Food");
   };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const amt = Number(amount);
     if (!amt || amt <= 0) {
-      alert("Nominal harus lebih dari 0");
+      alert(t("Nominal harus lebih dari 0"));
       return;
     }
     if (!date) {
-      alert("Tanggal wajib diisi");
+      alert(t("Tanggal wajib diisi"));
       return;
     }
     onSubmit({
@@ -68,33 +70,33 @@ export default function TransactionForm({
   return (
     <form onSubmit={submit}>
       <div className="row" style={{ marginBottom: 12 }}>
-        {(["expense", "income"] as TransactionType[]).map((t) => (
+        {(["expense", "income"] as TransactionType[]).map((kind) => (
           <button
-            key={t}
+            key={kind}
             type="button"
-            className={`btn ${type === t ? "primary" : ""}`}
-            onClick={() => handleType(t)}
+            className={`btn ${type === kind ? "primary" : ""}`}
+            onClick={() => handleType(kind)}
           >
-            {t === "income" ? "⬆ Income" : "⬇ Expense"}
+            {kind === "income" ? t("⬆ Income") : t("⬇ Expense")}
           </button>
         ))}
       </div>
 
       <div className="form-grid">
         <div>
-          <label className="lbl">Nominal (Rp)</label>
+          <label className="lbl">{t("Nominal (Rp)")}</label>
           <input
             className="input"
             type="number"
             min={0}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder="cth: 50000"
+            placeholder={t("cth: 50000")}
             required
           />
         </div>
         <div>
-          <label className="lbl">Tanggal</label>
+          <label className="lbl">{t("Tanggal")}</label>
           <input
             className="input"
             type="date"
@@ -105,7 +107,7 @@ export default function TransactionForm({
         </div>
         <div>
           <label className="lbl">
-            Kategori {type === "income" ? "Income" : "Expense"}
+            {type === "income" ? t("Kategori Income") : t("Kategori Expense")}
           </label>
           <select
             className="select"
@@ -114,14 +116,14 @@ export default function TransactionForm({
           >
             {cats.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {t(c)}
               </option>
             ))}
           </select>
         </div>
         {isInvest && (
           <div>
-            <label className="lbl">Bentuk Investasi</label>
+            <label className="lbl">{t("Bentuk Investasi")}</label>
             <select
               className="select"
               value={instrument}
@@ -129,7 +131,7 @@ export default function TransactionForm({
             >
               {INVESTMENT_INSTRUMENTS.map((m) => (
                 <option key={m} value={m}>
-                  {m}
+                  {t(m)}
                 </option>
               ))}
             </select>
@@ -137,7 +139,7 @@ export default function TransactionForm({
         )}
         {type === "expense" && (
           <div>
-            <label className="lbl">Metode Pembayaran</label>
+            <label className="lbl">{t("Metode Pembayaran")}</label>
             <select
               className="select"
               value={paymentMethod}
@@ -145,19 +147,19 @@ export default function TransactionForm({
             >
               {PAYMENT_METHODS.map((m) => (
                 <option key={m} value={m}>
-                  {m}
+                  {t(m)}
                 </option>
               ))}
             </select>
           </div>
         )}
         <div style={{ gridColumn: "1 / -1" }}>
-          <label className="lbl">Catatan</label>
+          <label className="lbl">{t("Catatan")}</label>
           <input
             className="input"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="cth: Makan siang, Gaji September..."
+            placeholder={t("cth: Makan siang, Gaji September...")}
           />
         </div>
       </div>
@@ -165,11 +167,11 @@ export default function TransactionForm({
       <div className="row" style={{ marginTop: 16, justifyContent: "flex-end" }}>
         {onCancel && (
           <button type="button" className="btn" onClick={onCancel}>
-            Batal
+            {t("Batal")}
           </button>
         )}
         <button type="submit" className="btn primary">
-          {initial ? "Simpan Perubahan" : "+ Tambah Transaksi"}
+          {initial ? t("Simpan Perubahan") : t("+ Tambah Transaksi")}
         </button>
       </div>
     </form>

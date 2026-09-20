@@ -1,5 +1,6 @@
 "use client";
 
+import { useLang } from "@/lib/i18n";
 import {
   Bar,
   BarChart,
@@ -20,7 +21,8 @@ export interface MonthlyPoint {
 }
 
 export default function CashflowChart({ data }: { data: MonthlyPoint[] }) {
-  if (data.length === 0) return <p className="sub">Belum ada data.</p>;
+  const { t } = useLang();
+  if (data.length === 0) return <p className="sub">{t("Belum ada data.")}</p>;
   return (
     <div style={{ width: "100%", height: 300 }}>
       <ResponsiveContainer>

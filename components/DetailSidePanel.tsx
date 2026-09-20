@@ -3,6 +3,7 @@
 import { Transaction } from "@/lib/types";
 import { formatIDR } from "@/lib/utils";
 import { colorForCategory, colorForInstrument, INVESTMENT_INSTRUMENTS } from "@/lib/constants";
+import { useLang } from "@/lib/i18n";
 import CategoryChart from "@/components/CategoryChart";
 
 export type DetailTab = "income" | "expenses" | "cashflow" | "saving" | "investment";
@@ -35,26 +36,27 @@ interface Props {
 }
 
 export function DetailSidePanel({ active, onChange, summary, onAddIncome, onAddExpense }: Props) {
+  const { t } = useLang();
   return (
     <aside className="side-panel">
-      <h4>☰ Detail Keuangan</h4>
-      {DETAIL_TABS.map((t) => (
+      <h4>{t("☰ Detail Keuangan")}</h4>
+      {DETAIL_TABS.map((tab) => (
         <button
-          key={t.id}
-          className={`side-tab ${active === t.id ? "active" : ""}`}
-          onClick={() => onChange(t.id)}
+          key={tab.id}
+          className={`side-tab ${active === tab.id ? "active" : ""}`}
+          onClick={() => onChange(tab.id)}
         >
-          <span className="side-ico">{t.icon}</span>
-          <span className="lbl">{t.label}<small>{t.sub}</small></span>
-          <span className="amt">{shortIDR(summary[t.id])}</span>
+          <span className="side-ico">{tab.icon}</span>
+          <span className="lbl">{tab.label}<small>{t(tab.sub)}</small></span>
+          <span className="amt">{shortIDR(summary[tab.id])}</span>
         </button>
       ))}
       <div className="side-hint">
-        Setiap tab menampilkan statistik, grafik, dan transaksi terkait — plus tombol tambah pos.
+        {t("Setiap tab menampilkan statistik, grafik, dan transaksi terkait — plus tombol tambah pos.")}
       </div>
       <div className="row" style={{ padding: "4px 4px 2px" }}>
-        <button className="btn sand sm" style={{ flex: 1, justifyContent: "center" }} onClick={onAddIncome}>＋ Income</button>
-        <button className="btn primary sm" style={{ flex: 1, justifyContent: "center" }} onClick={onAddExpense}>＋ Expense</button>
+        <button className="btn sand sm" style={{ flex: 1, justifyContent: "center" }} onClick={onAddIncome}>{t("＋ Income")}</button>
+        <button className="btn primary sm" style={{ flex: 1, justifyContent: "center" }} onClick={onAddExpense}>{t("＋ Expense")}</button>
       </div>
     </aside>
   );
@@ -98,15 +100,16 @@ export function DetailContent({
   onAddIncome: () => void;
   onAddExpense: () => void;
 }) {
-  const incomes = filtered.filter((t) => t.type === "income");
-  const expenses = filtered.filter((t) => t.type === "expense");
-  const totalIn = incomes.reduce((s, t) => s + t.amount, 0);
-  const totalOut = expenses.reduce((s, t) => s + t.amount, 0);
+  const { t } = useLang();
+  const incomes = filtered.filter((x) => x.type === "income");
+  const expenses = filtered.filter((x) => x.type === "expense");
+  const totalIn = incomes.reduce((s, x) => s + x.amount, 0);
+  const totalOut = expenses.reduce((s, x) => s + x.amount, 0);
   const net = totalIn - totalOut;
 
   const group = (list: Transaction[]) => {
     const m = new Map<string, number>();
-    list.forEach((t) => m.set(t.category, (m.get(t.category) ?? 0) + t.amount));
+    list.forEach((x) => m.set(x.category, (m.get(x.category) ?? 0) + x.amount));
     return Array.from(m.entries())
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
@@ -118,45 +121,45 @@ export function DetailContent({
     return (
       <div className="card">
         <PanelHead
-          icon="💰" title="Income" desc={`${incomes.length} pos pemasukan pada periode ini`}
-          action={<button className="btn sand sm" onClick={onAddIncome}>＋ Tambah Income</button>}
+          icon="💰" title={t("Income")} desc={t("{count} pos pemasukan pada periode ini", { count: incomes.length })}
+          action={<button className="btn sand sm" onClick={onAddIncome}>{t("＋ Tambah Income")}</button>}
         />
         <div className="grid grid-3 mt">
-          <Stat k="Total income" v={formatIDR(totalIn)} s={`${incomes.length} transaksi`} />
-          <Stat k="Rata-rata / pos" v={formatIDR(incomes.length ? Math.round(totalIn / incomes.length) : 0)} s="Per transaksi" />
-          <Stat k="Sumber terbesar" v={top ? top.name : "-"} s={top ? formatIDR(top.value) : "Belum ada data"} />
+          <Stat k={t("Total income")} v={formatIDR(totalIn)} s={t("{count} transaksi", { count: incomes.length })} />
+          <Stat k={t("Rata-rata / pos")} v={formatIDR(incomes.length ? Math.round(totalIn / incomes.length) : 0)} s={t("Per transaksi")} />
+          <Stat k={t("Sumber terbesar")} v={top ? t(top.name) : "-"} s={top ? formatIDR(top.value) : t("Belum ada data")} />
         </div>
         <div className="grid grid-2 mt">
           <div>
-            <b style={{ fontSize: 13 }}>Komposisi sumber income</b>
-            <CategoryChart data={byCat} />
+            <b style={{ fontSize: 13 }}>{t("Komposisi sumber income")}</b>
+            <CategoryChart data={byCat.map((c) => ({ name: t(c.name), value: c.value }))} />
           </div>
           <div>
-            <b style={{ fontSize: 13 }}>Rincian per kategori</b>
+            <b style={{ fontSize: 13 }}>{t("Rincian per kategori")}</b>
             <div className="mt">
               {byCat.map((c) => (
                 <div className="cat-row" key={c.name}>
                   <div className="space-between" style={{ fontSize: 13 }}>
-                    <span><span className="pill income">{c.name}</span></span><b>{formatIDR(c.value)}</b>
+                    <span><span className="pill income">{t(c.name)}</span></span><b>{formatIDR(c.value)}</b>
                   </div>
                   <div className="progress green" style={{ marginTop: 6 }}>
                     <div style={{ width: `${totalIn ? (c.value / totalIn) * 100 : 0}%` }} />
                   </div>
-                  <div className="sub">{totalIn ? ((c.value / totalIn) * 100).toFixed(1) : "0"}% dari total income</div>
+                  <div className="sub">{t("{percent}% dari total income", { percent: totalIn ? ((c.value / totalIn) * 100).toFixed(1) : "0" })}</div>
                 </div>
               ))}
               {byCat.length === 0 && (
-                <div className="empty"><span className="big-emoji">💸</span>Belum ada income.<br />Tambah pos Salary / Bonus / Dividen / Gift.</div>
+                <div className="empty"><span className="big-emoji">💸</span>{t("Belum ada income. Tambah pos Salary / Bonus / Dividen / Gift.")}</div>
               )}
             </div>
           </div>
         </div>
-        <h4 style={{ margin: "14px 0 8px", fontSize: 14 }}>Transaksi income terbaru</h4>
+        <h4 style={{ margin: "14px 0 8px", fontSize: 14 }}>{t("Transaksi income terbaru")}</h4>
         <div className="table-wrap"><table className="tbl">
-          <thead><tr><th>Tanggal</th><th>Kategori</th><th>Catatan</th><th style={{ textAlign: "right" }}>Nominal</th></tr></thead>
-          <tbody>{incomes.slice(0, 5).map((t) => (
-            <tr key={t.id}><td>{t.date}</td><td>{t.category}</td><td>{t.note || <span className="sub">-</span>}</td><td style={{ textAlign: "right" }} className="positive"><b>+{formatIDR(t.amount)}</b></td></tr>
-          ))}{incomes.length === 0 && <tr><td colSpan={4} style={{ textAlign: "center" }} className="sub">Kosong</td></tr>}</tbody>
+          <thead><tr><th>{t("Tanggal")}</th><th>{t("Kategori")}</th><th>{t("Catatan")}</th><th style={{ textAlign: "right" }}>{t("Nominal")}</th></tr></thead>
+          <tbody>{incomes.slice(0, 5).map((x) => (
+            <tr key={x.id}><td>{x.date}</td><td>{t(x.category)}</td><td>{x.note || <span className="sub">-</span>}</td><td style={{ textAlign: "right" }} className="positive"><b>+{formatIDR(x.amount)}</b></td></tr>
+          ))}{incomes.length === 0 && <tr><td colSpan={4} style={{ textAlign: "center" }} className="sub">{t("Kosong")}</td></tr>}</tbody>
         </table></div>
       </div>
     );
@@ -165,48 +168,48 @@ export function DetailContent({
   if (tab === "expenses") {
     const byCat = group(expenses);
     const pay = new Map<string, number>();
-    expenses.forEach((t) => pay.set(t.paymentMethod ?? "Cash", (pay.get(t.paymentMethod ?? "Cash") ?? 0) + t.amount));
+    expenses.forEach((x) => pay.set(x.paymentMethod ?? "Cash", (pay.get(x.paymentMethod ?? "Cash") ?? 0) + x.amount));
     const payArr = Array.from(pay.entries()).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
     return (
       <div className="card">
         <PanelHead
-          icon="🧾" title="Expenses" desc={`${expenses.length} pos pengeluaran pada periode ini`}
-          action={<button className="btn primary sm" onClick={onAddExpense}>＋ Tambah Expense</button>}
+          icon="🧾" title={t("Expenses")} desc={t("{count} pos pengeluaran pada periode ini", { count: expenses.length })}
+          action={<button className="btn primary sm" onClick={onAddExpense}>{t("＋ Tambah Expense")}</button>}
         />
         <div className="grid grid-3 mt">
-          <Stat k="Total expense" v={formatIDR(totalOut)} s={`${expenses.length} transaksi`} />
-          <Stat k="Metode favorit" v={payArr[0]?.name ?? "-"} s={payArr[0] ? formatIDR(payArr[0].value) : "Belum ada data"} />
-          <Stat k="Kategori terbesar" v={byCat[0]?.name ?? "-"} s={byCat[0] ? formatIDR(byCat[0].value) : "Belum ada data"} />
+          <Stat k={t("Total expense")} v={formatIDR(totalOut)} s={t("{count} transaksi", { count: expenses.length })} />
+          <Stat k={t("Metode favorit")} v={payArr[0] ? t(payArr[0].name) : "-"} s={payArr[0] ? formatIDR(payArr[0].value) : t("Belum ada data")} />
+          <Stat k={t("Kategori terbesar")} v={byCat[0] ? t(byCat[0].name) : "-"} s={byCat[0] ? formatIDR(byCat[0].value) : t("Belum ada data")} />
         </div>
         <div className="grid grid-2 mt">
           <div>
-            <b style={{ fontSize: 13 }}>Komposisi pengeluaran</b>
-            <CategoryChart data={byCat} />
-            <b style={{ fontSize: 13 }}>Top kategori</b>
+            <b style={{ fontSize: 13 }}>{t("Komposisi pengeluaran")}</b>
+            <CategoryChart data={byCat.map((c) => ({ name: t(c.name), value: c.value }))} />
+            <b style={{ fontSize: 13 }}>{t("Top kategori")}</b>
             <div className="mt">
               {byCat.slice(0, 5).map((c) => (
                 <div key={c.name} className="space-between cat-row" style={{ fontSize: 13 }}>
-                  <span><span className="dot" style={{ background: colorForCategory(c.name) }} />{c.name}</span>
+                  <span><span className="dot" style={{ background: colorForCategory(c.name) }} />{t(c.name)}</span>
                   <b>{formatIDR(c.value)}</b>
                 </div>
               ))}
             </div>
           </div>
           <div>
-            <b style={{ fontSize: 13 }}>Per metode pembayaran</b>
+            <b style={{ fontSize: 13 }}>{t("Per metode pembayaran")}</b>
             <div className="mt">
               {payArr.map((p) => (
                 <div key={p.name} style={{ marginBottom: 12 }}>
                   <div className="space-between" style={{ fontSize: 13 }}>
-                    <span className="pill method">{p.name}</span><b>{formatIDR(p.value)}</b>
+                    <span className="pill method">{t(p.name)}</span><b>{formatIDR(p.value)}</b>
                   </div>
                   <div className="progress" style={{ marginTop: 6 }}>
                     <div style={{ width: `${totalOut ? (p.value / totalOut) * 100 : 0}%` }} />
                   </div>
-                  <div className="sub">{totalOut ? ((p.value / totalOut) * 100).toFixed(1) : "0"}% dari total expense</div>
+                  <div className="sub">{t("{percent}% dari total expense", { percent: totalOut ? ((p.value / totalOut) * 100).toFixed(1) : "0" })}</div>
                 </div>
               ))}
-              {payArr.length === 0 && <p className="sub">Belum ada expense.</p>}
+              {payArr.length === 0 && <p className="sub">{t("Belum ada expense.")}</p>}
             </div>
           </div>
         </div>
@@ -219,27 +222,27 @@ export function DetailContent({
     const good = net >= 0;
     return (
       <div className="card">
-        <PanelHead icon="📊" title="Cash Flow" desc="Selisih income dan expense — penentu kesehatan keuangan" />
+        <PanelHead icon="📊" title={t("Cash Flow")} desc={t("Selisih income dan expense — penentu kesehatan keuangan")} />
         <div className="grid grid-3 mt">
-          <Stat k="Income" v={formatIDR(totalIn)} s="Total masuk" />
-          <Stat k="Expense" v={formatIDR(totalOut)} s="Total keluar" />
-          <Stat k="Net cash flow" v={formatIDR(net)} s={`Savings rate ${rate.toFixed(1)}%`} />
+          <Stat k={t("Income")} v={formatIDR(totalIn)} s={t("Total masuk")} />
+          <Stat k={t("Expense")} v={formatIDR(totalOut)} s={t("Total keluar")} />
+          <Stat k={t("Net cash flow")} v={formatIDR(net)} s={`${t("Savings rate")} ${rate.toFixed(1)}%`} />
         </div>
         <div className={`insight-box ${good ? "good" : "bad"} mt`}>
           {good
-            ? `✅ Surplus ${formatIDR(net)}. Bagus! Sisihkan minimal 20% ke Saving & Investasi sebelum belanja keinginan.`
-            : `⚠️ Defisit ${formatIDR(Math.abs(net))}. Coba pangkas 10–15% dari Hobby, Entertainment, atau Shopping bulan ini.`}
+            ? t("✅ Surplus {amount}. Bagus! Sisihkan minimal 20% ke Saving & Investasi sebelum belanja keinginan.", { amount: formatIDR(net) })
+            : t("⚠️ Defisit {amount}. Coba pangkas 10–15% dari Hobby, Entertainment, atau Shopping bulan ini.", { amount: formatIDR(Math.abs(net)) })}
         </div>
-        <h4 style={{ margin: "14px 0 8px", fontSize: 14 }}>Rincian bulanan</h4>
+        <h4 style={{ margin: "14px 0 8px", fontSize: 14 }}>{t("Rincian bulanan")}</h4>
         <div className="table-wrap"><table className="tbl">
-          <thead><tr><th>Bulan</th><th>Income</th><th>Expense</th><th>Net</th><th>Status</th></tr></thead>
+          <thead><tr><th>{t("Bulan")}</th><th>{t("Income")}</th><th>{t("Expense")}</th><th>{t("Net")}</th><th>{t("Status")}</th></tr></thead>
           <tbody>{monthly.map((m) => (
             <tr key={m.key}>
               <td><b>{m.label}</b></td>
               <td className="positive">{formatIDR(m.income)}</td>
               <td className="negative">{formatIDR(m.expense)}</td>
               <td style={{ fontWeight: 800, color: m.cashflow >= 0 ? "#1e7a4c" : "#b34434" }}>{formatIDR(m.cashflow)}</td>
-              <td>{m.cashflow >= 0 ? <span className="pill ok">Surplus</span> : <span className="pill bad">Defisit</span>}</td>
+              <td>{m.cashflow >= 0 ? <span className="pill ok">{t("Surplus")}</span> : <span className="pill bad">{t("Defisit")}</span>}</td>
             </tr>
           ))}</tbody>
         </table></div>
@@ -248,47 +251,53 @@ export function DetailContent({
   }
 
   if (tab === "saving") {
-    const savingTx = filtered.filter((t) => t.type === "expense" && t.category === "Saving");
-    const totalSaving = savingTx.reduce((s, t) => s + t.amount, 0);
+    const savingTx = filtered.filter((x) => x.type === "expense" && x.category === "Saving");
+    const totalSaving = savingTx.reduce((s, x) => s + x.amount, 0);
     const pctIncome = totalIn ? (totalSaving / totalIn) * 100 : 0;
     return (
       <div className="card">
         <PanelHead
-          icon="🏦" title="Saving" desc="Dana yang disisihkan + progres tiap goal"
-          action={<button className="btn primary sm" onClick={onAddExpense}>＋ Tambah Saving</button>}
+          icon="🏦" title={t("Saving")} desc={t("Dana yang disisihkan + progres tiap goal")}
+          action={<button className="btn primary sm" onClick={onAddExpense}>{t("＋ Tambah Saving")}</button>}
         />
         <div className="grid grid-2 mt">
-          <Stat k="Total saving" v={formatIDR(totalSaving)} s={`${savingTx.length} pos kategori Saving`} />
-          <Stat k="Porsi dari income" v={`${pctIncome.toFixed(1)}%`} s={pctIncome >= 20 ? "Sudah ideal 🎉" : "Target ideal ≥ 20%"} />
+          <Stat k={t("Total saving")} v={formatIDR(totalSaving)} s={t("{count} pos kategori Saving", { count: savingTx.length })} />
+          <Stat k={t("Porsi dari income")} v={`${pctIncome.toFixed(1)}%`} s={pctIncome >= 20 ? t("Sudah ideal 🎉") : t("Target ideal ≥ 20%")} />
         </div>
-        <h4 style={{ margin: "14px 0 8px", fontSize: 14 }}>Goals</h4>
+        <h4 style={{ margin: "14px 0 8px", fontSize: 14 }}>{t("Goals")}</h4>
         {goals.map((g) => {
           const pct = g.target > 0 ? Math.min(100, (g.saved / g.target) * 100) : 0;
           return (
             <div key={g.id} className="stat-mini" style={{ marginBottom: 10 }}>
               <div className="space-between"><b>{g.name}</b><span className="sub">{formatIDR(g.saved)} / {formatIDR(g.target)}</span></div>
               <div className="progress green" style={{ margin: "8px 0" }}><div style={{ width: `${pct}%` }} /></div>
-              <div className="sub">{pct.toFixed(0)}% tercapai • Deadline {g.deadline || "-"} • Sisa {formatIDR(Math.max(0, g.target - g.saved))}</div>
+              <div className="sub">
+                {t("{percent}% tercapai • Deadline {deadline} • Sisa {remaining}", {
+                  percent: pct.toFixed(0),
+                  deadline: g.deadline || "-",
+                  remaining: formatIDR(Math.max(0, g.target - g.saved)),
+                })}
+              </div>
             </div>
           );
         })}
         {goals.length === 0 && (
-          <div className="empty"><span className="big-emoji">🏦</span>Belum ada saving goal.<br />Buat di halaman Planner.</div>
+          <div className="empty"><span className="big-emoji">🏦</span>{t("Belum ada saving goal. Buat di halaman Planner.")}</div>
         )}
       </div>
     );
   }
 
-  const investOut = filtered.filter((t) => t.type === "expense" && t.category === "Invest").reduce((s, t) => s + t.amount, 0);
-  const investIn = filtered.filter((t) => t.type === "income" && (t.category === "Investasi" || t.category === "Dividen")).reduce((s, t) => s + t.amount, 0);
-  const investTx = filtered.filter((t) => t.category === "Invest" || t.category === "Investasi" || t.category === "Dividen");
+  const investOut = filtered.filter((x) => x.type === "expense" && x.category === "Invest").reduce((s, x) => s + x.amount, 0);
+  const investIn = filtered.filter((x) => x.type === "income" && (x.category === "Investasi" || x.category === "Dividen")).reduce((s, x) => s + x.amount, 0);
+  const investTx = filtered.filter((x) => x.category === "Invest" || x.category === "Investasi" || x.category === "Dividen");
 
   const byInstrument = new Map<string, number>();
   filtered
-    .filter((t) => t.type === "expense" && t.category === "Invest")
-    .forEach((t) => {
-      const key = t.instrument ?? "Belum ditentukan";
-      byInstrument.set(key, (byInstrument.get(key) ?? 0) + t.amount);
+    .filter((x) => x.type === "expense" && x.category === "Invest")
+    .forEach((x) => {
+      const key = x.instrument ?? "Belum ditentukan";
+      byInstrument.set(key, (byInstrument.get(key) ?? 0) + x.amount);
     });
   const instrumentArr = Array.from(byInstrument.entries())
     .map(([name, value]) => ({ name, value }))
@@ -298,25 +307,25 @@ export function DetailContent({
   return (
     <div className="card">
       <PanelHead
-        icon="📈" title="Investment" desc="Modal yang ditanam vs return yang kembali"
-        action={<button className="btn primary sm" onClick={onAddExpense}>＋ Tambah Investasi</button>}
+        icon="📈" title={t("Investment")} desc={t("Modal yang ditanam vs return yang kembali")}
+        action={<button className="btn primary sm" onClick={onAddExpense}>{t("＋ Tambah Investasi")}</button>}
       />
       <div className="grid grid-3 mt">
-        <Stat k="Modal (keluar)" v={formatIDR(investOut)} s="Kategori Invest" />
-        <Stat k="Return (masuk)" v={formatIDR(investIn)} s="Investasi + Dividen" />
-        <Stat k="Net investasi" v={formatIDR(investIn - investOut)} s="Return − Modal" />
+        <Stat k={t("Modal (keluar)")} v={formatIDR(investOut)} s={t("Kategori Invest")} />
+        <Stat k={t("Return (masuk)")} v={formatIDR(investIn)} s={t("Investasi + Dividen")} />
+        <Stat k={t("Net investasi")} v={formatIDR(investIn - investOut)} s={t("Return − Modal")} />
       </div>
 
       <div className="grid grid-2 mt">
         <div>
-          <b style={{ fontSize: 13 }}>Alokasi per bentuk investasi</b>
+          <b style={{ fontSize: 13 }}>{t("Alokasi per bentuk investasi")}</b>
           <div className="mt">
             {instrumentArr.map((x) => (
               <div key={x.name} style={{ marginBottom: 11 }}>
                 <div className="space-between" style={{ fontSize: 13 }}>
                   <span>
                     <span className="dot" style={{ background: colorForInstrument(x.name) }} />
-                    {x.name}
+                    {t(x.name)}
                   </span>
                   <b>{formatIDR(x.value)}</b>
                 </div>
@@ -326,32 +335,32 @@ export function DetailContent({
               </div>
             ))}
             {instrumentArr.length === 0 && (
-              <div className="empty"><span className="big-emoji">🥇</span>Belum ada pos investasi.<br />Tambahkan dan pilih bentuknya: Gold, Stock, Bonds, dll.</div>
+              <div className="empty"><span className="big-emoji">🥇</span>{t("Belum ada pos investasi. Tambahkan dan pilih bentuknya: Gold, Stock, Bonds, dll.")}</div>
             )}
           </div>
         </div>
         <div>
-          <b style={{ fontSize: 13 }}>Bentuk investasi tersedia</b>
+          <b style={{ fontSize: 13 }}>{t("Bentuk investasi tersedia")}</b>
           <div className="mt row" style={{ gap: 6 }}>
             {INVESTMENT_INSTRUMENTS.map((m) => (
-              <span key={m} className="pill sand">{m}</span>
+              <span key={m} className="pill sand">{t(m)}</span>
             ))}
           </div>
           <div className="insight-box mt">
-            💡 Strategi: alokasikan 10–20% income ke Invest di awal bulan (<i>pay yourself first</i>), dan sebar ke beberapa bentuk agar risiko tidak menumpuk di satu instrumen.
+            {t("💡 Strategi: alokasikan 10–20% income ke Invest di awal bulan (pay yourself first), dan sebar ke beberapa bentuk agar risiko tidak menumpuk di satu instrumen.")}
           </div>
         </div>
       </div>
 
-      <h4 style={{ margin: "14px 0 8px", fontSize: 14 }}>Transaksi investasi</h4>
+      <h4 style={{ margin: "14px 0 8px", fontSize: 14 }}>{t("Transaksi investasi")}</h4>
       <div className="table-wrap"><table className="tbl">
-        <thead><tr><th>Tanggal</th><th>Tipe</th><th>Kategori</th><th>Bentuk</th><th>Catatan</th><th style={{ textAlign: "right" }}>Nominal</th></tr></thead>
-        <tbody>{investTx.slice(0, 8).map((t) => (
-          <tr key={t.id}><td>{t.date}</td><td><span className={`pill ${t.type}`}>{t.type}</span></td><td>{t.category}</td>
-          <td>{t.instrument ? <span className="pill sand">{t.instrument}</span> : <span className="sub">-</span>}</td>
-          <td>{t.note || <span className="sub">-</span>}</td>
-          <td style={{ textAlign: "right" }}><b>{formatIDR(t.amount)}</b></td></tr>
-        ))}{investTx.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center" }} className="sub">Belum ada pos investasi.</td></tr>}</tbody>
+        <thead><tr><th>{t("Tanggal")}</th><th>{t("Tipe")}</th><th>{t("Kategori")}</th><th>{t("Bentuk")}</th><th>{t("Catatan")}</th><th style={{ textAlign: "right" }}>{t("Nominal")}</th></tr></thead>
+        <tbody>{investTx.slice(0, 8).map((x) => (
+          <tr key={x.id}><td>{x.date}</td><td><span className={`pill ${x.type}`}>{x.type}</span></td><td>{t(x.category)}</td>
+          <td>{x.instrument ? <span className="pill sand">{t(x.instrument)}</span> : <span className="sub">-</span>}</td>
+          <td>{x.note || <span className="sub">-</span>}</td>
+          <td style={{ textAlign: "right" }}><b>{formatIDR(x.amount)}</b></td></tr>
+        ))}{investTx.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center" }} className="sub">{t("Belum ada pos investasi.")}</td></tr>}</tbody>
       </table></div>
     </div>
   );

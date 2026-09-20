@@ -10,8 +10,14 @@ interface AuthContextValue {
   loading: boolean;
   cloud: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: string | null; info: string | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    name: string
+  ) => Promise<{ error: string | null; info: string | null }>;
   signOut: () => Promise<void>;
+  updateProfile: (name: string) => Promise<{ error: string | null }>;
+  updatePassword: (password: string) => Promise<{ error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -46,9 +52,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         return { error: error ? terjemahkan(error.message) : null };
       },
-      signUp: async (email, password) => {
+      signUp: async (email, password, name) => {
         if (!supabase) return { error: "Supabase belum dikonfigurasi.", info: null };
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: name.trim() } },
+        });
         if (error) return { error: terjemahkan(error.message), info: null };
         if (!data.session)
           return { error: null, info: "Akun dibuat. Cek email kamu untuk konfirmasi, lalu login." };
@@ -57,6 +67,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signOut: async () => {
         if (supabase) await supabase.auth.signOut();
         setSession(null);
+      },
+      updateProfile: async (name) => {
+        if (!supabase) return { error: "Supabase belum dikonfigurasi." };
+        const { data, error } = await supabase.auth.updateUser({
+          data: { full_name: name.trim() },
+        });
+        if (error) return { error: terjemahkan(error.message) };
+        // segarkan sesi supaya nama baru langsung tampil
+        if (data.user) setSession((s) => (s ? { ...s, user: data.user } : s));
+        return { error: null };
+      },
+      updatePassword: async (password) => {
+        if (!supabase) return { error: "Supabase belum dikonfigurasi." };
+        const { error } = await supabase.auth.updateUser({ password });
+        return { error: error ? terjemahkan(error.message) : null };
       },
     }),
     [session, loading]

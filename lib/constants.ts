@@ -68,6 +68,7 @@ export const INSTRUMENT_COLORS: Record<string, string> = {
   Property: "#a5814f",
   "P2P Lending": "#3b82c4",
   Lainnya: "#b8ab8e",
+  Others: "#b8ab8e",
 };
 
 export function colorForInstrument(name: string): string {
@@ -97,6 +98,10 @@ export const CATEGORY_COLORS: Record<string, string> = {
   Entertainment: "#d9c7a7",
   Shopping: "#9c6b4f",
   Lainnya: "#b8ab8e",
+  // Alias bahasa Inggris (dipakai saat tampilan EN)
+  Dividend: "#163a6b",
+  Business: "#3b82c4",
+  Others: "#b8ab8e",
 };
 
 export function colorForCategory(cat: string): string {

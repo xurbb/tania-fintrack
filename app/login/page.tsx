@@ -3,11 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import { useLang } from "@/lib/i18n";
+import LangSwitch from "@/components/LangSwitch";
 
 export default function LoginPage() {
   const { signIn, signUp, cloud, user } = useAuth();
+  const { t } = useLang();
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "daftar">("login");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -17,28 +21,20 @@ export default function LoginPage() {
   if (!cloud) {
     return (
       <div className="card" style={{ maxWidth: 560, margin: "40px auto" }}>
-        <h2 className="page-title" style={{ fontSize: 20 }}>⚙️ Sinkronisasi belum aktif</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+          <h2 className="page-title" style={{ fontSize: 20 }}>{t("⚙️ Sinkronisasi belum aktif")}</h2>
+          <LangSwitch light />
+        </div>
         <p className="sub">
-          Aplikasi sedang berjalan dalam <b>mode lokal</b> (data hanya tersimpan di browser ini).
-          Untuk bisa diakses dan disinkronkan antar device, ikuti 3 langkah berikut.
+          {t("Aplikasi sedang berjalan dalam mode lokal (data hanya tersimpan di browser ini). Untuk bisa diakses dan disinkronkan antar device, ikuti 3 langkah berikut.")}
         </p>
         <ol className="sub" style={{ lineHeight: 1.9, marginTop: 10 }}>
-          <li>
-            Buat project gratis di <b>supabase.com</b>, lalu salin <b>Project URL</b> dan{" "}
-            <b>anon public key</b> (menu Settings → API).
-          </li>
-          <li>
-            Buka <b>SQL Editor</b> di Supabase, copy-paste isi file <code>supabase-schema.sql</code>,
-            lalu klik <b>Run</b>.
-          </li>
-          <li>
-            Buat file <code>.env.local</code> di folder proyek ini (contoh ada di{" "}
-            <code>.env.local.example</code>), isi dua nilai tadi, lalu jalankan ulang{" "}
-            <code>start-tania.cmd</code>.
-          </li>
+          <li>{t("Buat project gratis di supabase.com, lalu salin Project URL dan anon public key (menu Settings → API).")}</li>
+          <li>{t("Buka SQL Editor di Supabase, copy-paste isi file supabase-schema.sql, lalu klik Run.")}</li>
+          <li>{t("Buat file .env.local di folder proyek ini, isi dua nilai tadi, lalu jalankan ulang start-tania.cmd.")}</li>
         </ol>
         <button className="btn primary mt" onClick={() => router.push("/")}>
-          Lanjut pakai mode lokal
+          {t("Lanjut pakai mode lokal")}
         </button>
       </div>
     );
@@ -48,9 +44,9 @@ export default function LoginPage() {
     return (
       <div className="card" style={{ maxWidth: 420, margin: "40px auto", textAlign: "center" }}>
         <div style={{ fontSize: 28 }}>✅</div>
-        <b>Kamu sudah login</b>
+        <b>{t("Kamu sudah login")}</b>
         <p className="sub">{user.email}</p>
-        <button className="btn primary mt" onClick={() => router.push("/")}>Buka Dashboard</button>
+        <button className="btn primary mt" onClick={() => router.push("/")}>{t("Buka Dashboard")}</button>
       </div>
     );
   }
@@ -59,8 +55,9 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setInfo(null);
-    if (!email || !password) { setError("Email dan password wajib diisi."); return; }
-    if (password.length < 6) { setError("Password minimal 6 karakter."); return; }
+    if (!email || !password) { setError(t("Email dan password wajib diisi.")); return; }
+    if (mode === "daftar" && !name.trim()) { setError(t("Nama wajib diisi.")); return; }
+    if (password.length < 6) { setError(t("Password minimal 6 karakter.")); return; }
 
     setBusy(true);
     if (mode === "login") {
@@ -69,7 +66,7 @@ export default function LoginPage() {
       if (error) setError(error);
       else router.replace("/");
     } else {
-      const { error, info } = await signUp(email.trim(), password);
+      const { error, info } = await signUp(email.trim(), password, name);
       setBusy(false);
       if (error) setError(error);
       if (info) setInfo(info);
@@ -79,33 +76,55 @@ export default function LoginPage() {
   return (
     <div style={{ maxWidth: 430, margin: "36px auto" }}>
       <header className="hero" style={{ padding: "22px 24px" }}>
-        <div className="hero-eyebrow">💙 Your Personal FinTrack</div>
-        <h1 style={{ fontSize: 22 }}>{mode === "login" ? "Masuk ke akunmu" : "Buat akun baru"}</h1>
-        <p>Login sekali, data keuanganmu tersinkron di HP, laptop, dan tablet.</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+          {/* Header: nama web + subtitle — tidak diterjemahkan */}
+          <div>
+            <div className="hero-eyebrow">💙 Your Personal FinTrack</div>
+            <p style={{ margin: 0 }}>Manage Money Better and Wiser, Get Richer Faster!</p>
+          </div>
+          <LangSwitch />
+        </div>
+        <h1 style={{ fontSize: 22, marginTop: 12 }}>
+          {mode === "login" ? t("Masuk ke akunmu") : t("Buat akun baru")}
+        </h1>
+        <p>{t("Login sekali, data keuanganmu tersinkron di HP, laptop, dan tablet.")}</p>
       </header>
 
       <div className="card mt">
         <form onSubmit={submit}>
+          {mode === "daftar" && (
+            <div style={{ marginBottom: 12 }}>
+              <label className="lbl">{t("Nama")}</label>
+              <input
+                className="input"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t("cth: Rina")}
+                autoComplete="name"
+                required
+              />
+            </div>
+          )}
           <div style={{ marginBottom: 12 }}>
-            <label className="lbl">Email</label>
+            <label className="lbl">{t("Email")}</label>
             <input
               className="input"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="nama@email.com"
+              placeholder={t("masuk@email.com")}
               autoComplete="email"
               required
             />
           </div>
           <div style={{ marginBottom: 12 }}>
-            <label className="lbl">Password</label>
+            <label className="lbl">{t("Password")}</label>
             <input
               className="input"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="minimal 6 karakter"
+              placeholder={t("minimal 6 karakter")}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
               required
             />
@@ -115,24 +134,24 @@ export default function LoginPage() {
           {info && <div className="insight-box good" style={{ marginBottom: 12 }}>✅ {info}</div>}
 
           <button className="btn primary" type="submit" disabled={busy} style={{ width: "100%", justifyContent: "center" }}>
-            {busy ? "Memproses..." : mode === "login" ? "Masuk" : "Daftar"}
+            {busy ? t("Memproses...") : mode === "login" ? t("Masuk") : t("Daftar")}
           </button>
         </form>
 
         <p className="sub" style={{ textAlign: "center", marginTop: 14 }}>
-          {mode === "login" ? "Belum punya akun? " : "Sudah punya akun? "}
+          {mode === "login" ? t("Belum punya akun? ") : t("Sudah punya akun? ")}
           <button
             className="btn sm"
             style={{ marginLeft: 6 }}
             onClick={() => { setMode(mode === "login" ? "daftar" : "login"); setError(null); setInfo(null); }}
           >
-            {mode === "login" ? "Daftar sekarang" : "Masuk"}
+            {mode === "login" ? t("Daftar sekarang") : t("Masuk")}
           </button>
         </p>
       </div>
 
       <p className="sub" style={{ textAlign: "center", marginTop: 12 }}>
-        Data kamu dilindungi Row Level Security — hanya akunmu yang bisa membacanya.
+        {t("Data kamu dilindungi Row Level Security — hanya akunmu yang bisa membacanya.")}
       </p>
     </div>
   );

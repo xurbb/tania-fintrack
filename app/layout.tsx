@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LanguageProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth";
 import { FinanceProvider } from "@/lib/store";
 import Navbar from "@/components/Navbar";
@@ -15,20 +16,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="id">
       <body>
-        <AuthProvider>
-          <FinanceProvider>
-            <div className="app-shell">
-              <Navbar />
-              <main className="container">
-                <AuthGate>{children}</AuthGate>
-              </main>
-              <footer className="footer">
-                Made with 💙 by <b>Tania</b> to Manage Money Better and Wiser
-              </footer>
-              <FinanceChatbot />
-            </div>
-          </FinanceProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <FinanceProvider>
+              <div className="app-shell">
+                <Navbar />
+                <main className="container">
+                  <AuthGate>{children}</AuthGate>
+                </main>
+                <footer className="footer">
+                  Made with 💙 by <b>Tania</b> to Manage Money Better and Wiser
+                </footer>
+                <FinanceChatbot />
+              </div>
+            </FinanceProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

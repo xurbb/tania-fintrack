@@ -4,9 +4,11 @@ import { useMemo, useState } from "react";
 import { useFinance } from "@/lib/store";
 import { EXPENSE_CATEGORIES } from "@/lib/constants";
 import { formatIDR, monthKey, currentMonthKey, monthLabel } from "@/lib/utils";
+import { useLang } from "@/lib/i18n";
 
 export default function PlannerPage() {
   const { transactions, budgets, setBudget, goals, addGoal, updateGoal, deleteGoal } = useFinance();
+  const { t, lang } = useLang();
   const [month, setMonth] = useState(currentMonthKey());
 
   const [gName, setGName] = useState("");
@@ -15,15 +17,15 @@ export default function PlannerPage() {
   const [gDeadline, setGDeadline] = useState("");
 
   const months = useMemo(
-    () => Array.from(new Set(transactions.map((t) => monthKey(t.date)))).sort().reverse(),
+    () => Array.from(new Set(transactions.map((x) => monthKey(x.date)))).sort().reverse(),
     [transactions]
   );
 
   const spendByCat = useMemo(() => {
     const m = new Map<string, number>();
     transactions
-      .filter((t) => t.type === "expense" && monthKey(t.date) === month)
-      .forEach((t) => m.set(t.category, (m.get(t.category) ?? 0) + t.amount));
+      .filter((x) => x.type === "expense" && monthKey(x.date) === month)
+      .forEach((x) => m.set(x.category, (m.get(x.category) ?? 0) + x.amount));
     return m;
   }, [transactions, month]);
 
@@ -34,17 +36,22 @@ export default function PlannerPage() {
   return (
     <div>
       <header className="hero">
-        <div className="hero-eyebrow">🎯 Planner &amp; Budget</div>
-        <h1>Rencanakan bulanmu dengan tenang.</h1>
+        <div className="hero-eyebrow">{t("🎯 Planner & Budget")}</div>
+        <h1>{t("Rencanakan bulanmu dengan tenang.")}</h1>
         <p>
-          Periode <b style={{ color: "#fff" }}>{monthLabel(month)}</b> • Total budget{" "}
-          <b style={{ color: "#fff" }}>{formatIDR(totalBudget)}</b> • Terpakai {formatIDR(totalSpent)}
-          {overCount > 0 ? <span style={{ color: "#f5b3a6" }}> • {overCount} kategori over ⚠️</span> : <span style={{ color: "#9fe0b4" }}> • semua aman 🎉</span>}
+          {t("Periode {period} • Total budget {budget} • Terpakai {spent}", {
+            period: monthLabel(month, lang),
+            budget: formatIDR(totalBudget),
+            spent: formatIDR(totalSpent),
+          })}
+          {overCount > 0
+            ? <span style={{ color: "#f5b3a6" }}> {t("• {count} kategori over ⚠️", { count: overCount })}</span>
+            : <span style={{ color: "#9fe0b4" }}> {t("• semua aman 🎉")}</span>}
         </p>
         <div className="hero-actions">
-          <select className="select" value={month} onChange={(e) => setMonth(e.target.value)} aria-label="Bulan periode">
+          <select className="select" value={month} onChange={(e) => setMonth(e.target.value)} aria-label={t("Bulan")}>
             {[currentMonthKey(), ...months.filter((m) => m !== currentMonthKey())].map((m) => (
-              <option key={m} value={m}>{monthLabel(m)}</option>
+              <option key={m} value={m}>{monthLabel(m, lang)}</option>
             ))}
           </select>
         </div>
@@ -53,16 +60,16 @@ export default function PlannerPage() {
       <div className="section-head">
         <span className="section-num">01</span>
         <div>
-          <h2>Budget bulanan per kategori</h2>
-          <p>Atur limit tiap kategori expense. Klik di luar kolom nominal untuk menyimpan otomatis.</p>
+          <h2>{t("Budget bulanan per kategori")}</h2>
+          <p>{t("Atur limit tiap kategori expense. Klik di luar kolom nominal untuk menyimpan otomatis.")}</p>
         </div>
       </div>
 
       <div className="card">
         <div className="grid grid-3">
-          <div className="stat-mini"><div className="k">Total budget</div><div className="v">{formatIDR(totalBudget)}</div></div>
-          <div className="stat-mini"><div className="k">Terpakai</div><div className="v">{formatIDR(totalSpent)}</div></div>
-          <div className="stat-mini"><div className="k">Sisa</div><div className="v" style={{ color: totalBudget - totalSpent >= 0 ? "#1e7a4c" : "#b34434" }}>{formatIDR(totalBudget - totalSpent)}</div></div>
+          <div className="stat-mini"><div className="k">{t("Total budget")}</div><div className="v">{formatIDR(totalBudget)}</div></div>
+          <div className="stat-mini"><div className="k">{t("Terpakai")}</div><div className="v">{formatIDR(totalSpent)}</div></div>
+          <div className="stat-mini"><div className="k">{t("Sisa")}</div><div className="v" style={{ color: totalBudget - totalSpent >= 0 ? "#1e7a4c" : "#b34434" }}>{formatIDR(totalBudget - totalSpent)}</div></div>
         </div>
         <div className="grid grid-2 mt">
           {EXPENSE_CATEGORIES.map((cat) => {
@@ -74,8 +81,8 @@ export default function PlannerPage() {
             return (
               <div key={cat} className="stat-mini">
                 <div className="space-between">
-                  <b style={{ fontSize: 14 }}>{cat}</b>
-                  {over ? <span className="pill bad">Over!</span> : limit > 0 ? <span className="pill ok">Aman</span> : <span className="pill sand">Belum diatur</span>}
+                  <b style={{ fontSize: 14 }}>{t(cat)}</b>
+                  {over ? <span className="pill bad">{t("Over!")}</span> : limit > 0 ? <span className="pill ok">{t("Aman")}</span> : <span className="pill sand">{t("Belum diatur")}</span>}
                 </div>
                 <div className="sub" style={{ margin: "2px 0 6px" }}>{formatIDR(spent)} / {formatIDR(limit)}</div>
                 <div className={`progress ${over ? "over" : ""}`} style={{ marginBottom: 8 }}>
@@ -85,7 +92,7 @@ export default function PlannerPage() {
                   className="input"
                   type="number"
                   min={0}
-                  placeholder="Atur limit (Rp)"
+                  placeholder={t("Atur limit (Rp)")}
                   defaultValue={limit || ""}
                   key={`${cat}-${limit}`}
                   onBlur={(e) => {
@@ -103,8 +110,8 @@ export default function PlannerPage() {
       <div className="section-head">
         <span className="section-num">02</span>
         <div>
-          <h2>Target saving &amp; investasi</h2>
-          <p>Pantau progres Dana Darurat, DP Rumah, Liburan, dan goal lainnya.</p>
+          <h2>{t("Target saving & investasi")}</h2>
+          <p>{t("Pantau progres Dana Darurat, DP Rumah, Liburan, dan goal lainnya.")}</p>
         </div>
       </div>
 
@@ -117,26 +124,26 @@ export default function PlannerPage() {
               <div key={g.id} className="stat-mini">
                 <div className="space-between">
                   <b>🎯 {g.name}</b>
-                  <button className="btn danger sm" onClick={() => { if (confirm("Hapus goal ini?")) deleteGoal(g.id); }}>Hapus</button>
+                  <button className="btn danger sm" onClick={() => { if (confirm(t("Hapus goal ini?"))) deleteGoal(g.id); }}>{t("Hapus")}</button>
                 </div>
-                <div className="sub">Target {formatIDR(g.target)} • Deadline {g.deadline || "-"}</div>
+                <div className="sub">{t("Target")} {formatIDR(g.target)} • {t("Deadline")} {g.deadline || "-"}</div>
                 <div className="progress green" style={{ margin: "8px 0" }}><div style={{ width: `${pct}%` }} /></div>
                 <div className="space-between" style={{ fontSize: 13 }}>
-                  <span>Terkumpul <b>{formatIDR(g.saved)}</b> ({pct.toFixed(0)}%)</span>
-                  <span>{done ? <span className="pill ok">Tercapai 🎉</span> : <span className="sub">Sisa {formatIDR(Math.max(0, g.target - g.saved))}</span>}</span>
+                  <span>{t("Terkumpul")} <b>{formatIDR(g.saved)}</b> ({pct.toFixed(0)}%)</span>
+                  <span>{done ? <span className="pill ok">{t("Tercapai 🎉")}</span> : <span className="sub">{t("Sisa")} {formatIDR(Math.max(0, g.target - g.saved))}</span>}</span>
                 </div>
                 <div className="row mt">
-                  <input className="input" type="number" min={0} placeholder="+ Tambah tabungan (Rp)" id={`add-${g.id}`} style={{ maxWidth: 190 }} />
+                  <input className="input" type="number" min={0} placeholder={t("+ Tambah tabungan (Rp)")} id={`add-${g.id}`} style={{ maxWidth: 190 }} />
                   <button
                     className="btn primary sm"
                     onClick={() => {
                       const el = document.getElementById(`add-${g.id}`) as HTMLInputElement;
                       const v = Number(el?.value);
                       if (v > 0) { updateGoal(g.id, { saved: g.saved + Math.round(v) }); el.value = ""; }
-                      else alert("Masukkan nominal yang valid");
+                      else alert(t("Masukkan nominal yang valid"));
                     }}
                   >
-                    ＋ Nabung
+                    {t("＋ Nabung")}
                   </button>
                 </div>
               </div>
@@ -144,35 +151,34 @@ export default function PlannerPage() {
           })}
         </div>
         {goals.length === 0 && (
-          <div className="empty"><span className="big-emoji">🎯</span>Belum ada goal.<br />Tambah goal pertamamu di bawah.</div>
+          <div className="empty"><span className="big-emoji">🎯</span>{t("Belum ada goal.")}<br />{t("Tambah goal pertamamu di bawah.")}</div>
         )}
 
         <div className="mt" style={{ borderTop: "1px dashed var(--border)", paddingTop: 16 }}>
-          <h4 style={{ margin: "0 0 4px", fontSize: 15 }}>＋ Tambah Goal Baru</h4>
-          <p className="sub" style={{ margin: "0 0 12px" }}>Contoh: Dana Darurat 20 juta, Liburan Jepang 15 juta.</p>
+          <h4 style={{ margin: "0 0 4px", fontSize: 15 }}>{t("＋ Tambah Goal Baru")}</h4>
+          <p className="sub" style={{ margin: "0 0 12px" }}>{t("Contoh: Dana Darurat 20 juta, Liburan Jepang 15 juta.")}</p>
           <div className="form-grid">
-            <div><label className="lbl">Nama goal</label><input className="input" value={gName} onChange={(e) => setGName(e.target.value)} placeholder="Dana Darurat" /></div>
-            <div><label className="lbl">Deadline</label><input className="input" type="date" value={gDeadline} onChange={(e) => setGDeadline(e.target.value)} /></div>
-            <div><label className="lbl">Target (Rp)</label><input className="input" type="number" min={0} value={gTarget} onChange={(e) => setGTarget(e.target.value)} placeholder="20000000" /></div>
-            <div><label className="lbl">Sudah terkumpul (Rp)</label><input className="input" type="number" min={0} value={gSaved} onChange={(e) => setGSaved(e.target.value)} placeholder="0" /></div>
+            <div><label className="lbl">{t("Nama goal")}</label><input className="input" value={gName} onChange={(e) => setGName(e.target.value)} placeholder={t("Dana Darurat")} /></div>
+            <div><label className="lbl">{t("Deadline")}</label><input className="input" type="date" value={gDeadline} onChange={(e) => setGDeadline(e.target.value)} /></div>
+            <div><label className="lbl">{t("Target (Rp)")}</label><input className="input" type="number" min={0} value={gTarget} onChange={(e) => setGTarget(e.target.value)} placeholder="20000000" /></div>
+            <div><label className="lbl">{t("Sudah terkumpul (Rp)")}</label><input className="input" type="number" min={0} value={gSaved} onChange={(e) => setGSaved(e.target.value)} placeholder="0" /></div>
           </div>
           <button
             className="btn primary mt"
             onClick={() => {
-              if (!gName || !gTarget) { alert("Nama dan target wajib diisi"); return; }
+              if (!gName || !gTarget) { alert(t("Nama dan target wajib diisi")); return; }
               addGoal({ name: gName, target: Number(gTarget), saved: Number(gSaved) || 0, deadline: gDeadline });
               setGName(""); setGTarget(""); setGSaved(""); setGDeadline("");
             }}
           >
-            ＋ Tambah Goal
+            {t("＋ Tambah Goal")}
           </button>
         </div>
 
         <div className="insight-box mt">
-          <b>💡 Rumus 50/30/20:</b>
+          <b>{t("💡 Rumus 50/30/20:")}</b>
           <div className="sub" style={{ marginTop: 4 }}>
-            50% kebutuhan (Housing, Food, Transport, Utilities) • 30% keinginan (Hobby, Entertainment, Shopping, Family) •
-            20% masa depan (Saving, Invest). Cash flow positif = income &gt; expense.
+            {t("50% kebutuhan (Housing, Food, Transport, Utilities) • 30% keinginan (Hobby, Entertainment, Shopping, Family) • 20% masa depan (Saving, Invest). Cash flow positif = income > expense.")}
           </div>
         </div>
       </div>

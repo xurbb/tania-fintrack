@@ -9,6 +9,8 @@ Dibangun dengan **Next.js (App Router) + React + Recharts + Supabase**.
 
 ## Fitur
 
+- **Dua bahasa** — Indonesia & English, bisa diganti dari menu (ikon bahasa di navbar / menu tiga garis). Header dan footer tetap sama di kedua bahasa.
+- **Multi-akun** — tiap akun punya data sendiri, dipisahkan Row Level Security.
 - **Dashboard**
   - Total Income, Total Expense, Cash Flow (net), Savings Rate
   - Grafik bar Income vs Expense per bulan (8 bulan terakhir)

@@ -19,11 +19,11 @@ export function monthKey(dateStr: string): string {
   return dateStr.slice(0, 7);
 }
 
-export function monthLabel(key: string): string {
-  // key: yyyy-mm -> "Jan 2025" id
+export function monthLabel(key: string, lang: "id" | "en" = "id"): string {
+  // key: yyyy-mm -> "Jan 2025"
   const [y, m] = key.split("-").map(Number);
   const d = new Date(y, m - 1, 1);
-  return d.toLocaleDateString("id-ID", { month: "short", year: "numeric" });
+  return d.toLocaleDateString(lang === "en" ? "en-US" : "id-ID", { month: "short", year: "numeric" });
 }
 
 export function todayISO(): string {
