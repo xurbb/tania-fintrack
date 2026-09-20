@@ -84,10 +84,10 @@ export default function Dashboard() {
             ))}
           </select>
           <div className="hero-add-row">
-            <button className="btn ghost-light hero-add" onClick={() => setModalType("income")}>💰 {t("Income")}</button>
-            <button className="btn ghost-light hero-add" onClick={() => setModalType("expense")}>💸 {t("Expense")}</button>
-            <button className="btn ghost-light hero-add" onClick={() => setModalType("saving")}>🏦 {t("Saving")}</button>
-            <button className="btn ghost-light hero-add" onClick={() => setModalType("investment")}>📈 {t("Investment")}</button>
+            <button className="btn sand hero-add" onClick={() => setModalType("income")}>💰 {t("Income")}</button>
+            <button className="btn sand hero-add" onClick={() => setModalType("expense")}>💸 {t("Expense")}</button>
+            <button className="btn sand hero-add" onClick={() => setModalType("saving")}>🏦 {t("Saving")}</button>
+            <button className="btn sand hero-add" onClick={() => setModalType("investment")}>📈 {t("Investment")}</button>
           </div>
         </div>
       </header>

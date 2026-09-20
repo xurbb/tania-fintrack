@@ -94,7 +94,7 @@ export default function TransactionsPage() {
           {(Object.keys(CATEGORIES_BY_TYPE) as TransactionType[]).map((kind) => (
             <button
               key={kind}
-              className={kind === "income" ? "btn sand" : "btn ghost-light"}
+              className="btn sand"
               onClick={() => openAdd(kind)}
             >
               ＋ {t(TYPE_META[kind].label)}
