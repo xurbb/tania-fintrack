@@ -29,6 +29,18 @@ const TX_KEY = "ft_transactions_v1";
 const BUDGET_KEY = "ft_budgets_v1";
 const GOAL_KEY = "ft_goals_v1";
 
+/**
+ * Menjadi false otomatis kalau kolom `instrument` belum ada di database,
+ * supaya aplikasi tidak error sebelum migrasi dijalankan.
+ */
+let instrumentSupported = true;
+
+function txPayload(t: Omit<Transaction, "id">, userId: string): Record<string, unknown> {
+  const row: Record<string, unknown> = { ...txToRow(t, userId) };
+  if (instrumentSupported) row.instrument = t.instrument ?? null;
+  return row;
+}
+
 /* ---------------- Pemetaan baris database <-> tipe aplikasi ---------------- */
 
 interface TxRow {
@@ -37,6 +49,7 @@ interface TxRow {
   amount: number;
   category: string;
   payment_method: string | null;
+  instrument?: string | null;
   date: string;
   note: string | null;
 }
@@ -48,6 +61,7 @@ function rowToTx(r: TxRow): Transaction {
     amount: Number(r.amount),
     category: r.category,
     paymentMethod: (r.payment_method ?? undefined) as Transaction["paymentMethod"],
+    instrument: r.instrument ?? undefined,
     date: r.date,
     note: r.note ?? "",
   };
@@ -74,19 +88,20 @@ function seedTransactions(): Transaction[] {
     return d.toISOString().slice(0, 10);
   };
   return [
-    { id: uid(), type: "income", amount: 8500000, category: "Salary", date: iso(0, 1), note: "Gaji bulanan Tania" },
-    { id: uid(), type: "income", amount: 1200000, category: "Bonus", date: iso(0, 5), note: "Bonus proyek Tania" },
-    { id: uid(), type: "income", amount: 450000, category: "Dividen", date: iso(0, 8), note: "Dividen reksadana" },
+    { id: uid(), type: "income", amount: 8500000, category: "Salary", date: iso(0, 1), note: "Gaji bulanan" },
+    { id: uid(), type: "income", amount: 1200000, category: "Bonus", date: iso(0, 5), note: "Bonus proyek" },
+    { id: uid(), type: "income", amount: 450000, category: "Dividen", instrument: "Stock", date: iso(0, 8), note: "Dividen saham" },
     { id: uid(), type: "expense", amount: 1500000, category: "Housing", paymentMethod: "Transfer", date: iso(0, 2), note: "Kontrakan" },
     { id: uid(), type: "expense", amount: 650000, category: "Food", paymentMethod: "QRIS", date: iso(0, 3), note: "Groceries + jajan" },
     { id: uid(), type: "expense", amount: 400000, category: "Transport", paymentMethod: "Cash", date: iso(0, 4), note: "Bensin & parkir" },
-    { id: uid(), type: "expense", amount: 1000000, category: "Invest", paymentMethod: "Transfer", date: iso(0, 6), note: "Reksadana rutin" },
-    { id: uid(), type: "expense", amount: 750000, category: "Saving", paymentMethod: "Transfer", date: iso(0, 9), note: "Tabungan dana darurat" },
+    { id: uid(), type: "expense", amount: 1000000, category: "Invest", instrument: "Mutual Fund", paymentMethod: "Transfer", date: iso(0, 6), note: "Reksadana rutin" },
+    { id: uid(), type: "expense", amount: 500000, category: "Saving", paymentMethod: "Transfer", date: iso(0, 9), note: "Tabungan dana darurat" },
     { id: uid(), type: "expense", amount: 500000, category: "Debt", paymentMethod: "Transfer", date: iso(0, 7), note: "Cicilan" },
     { id: uid(), type: "income", amount: 8000000, category: "Salary", date: iso(1, 1), note: "Gaji bulan lalu" },
     { id: uid(), type: "expense", amount: 1800000, category: "Housing", paymentMethod: "Transfer", date: iso(1, 2), note: "Kontrakan" },
     { id: uid(), type: "expense", amount: 900000, category: "Food", paymentMethod: "QRIS", date: iso(1, 10), note: "Makan" },
     { id: uid(), type: "expense", amount: 800000, category: "Saving", paymentMethod: "Transfer", date: iso(1, 12), note: "Nabung rutin" },
+    { id: uid(), type: "expense", amount: 1200000, category: "Invest", instrument: "Gold", paymentMethod: "Transfer", date: iso(1, 18), note: "Beli emas antam" },
     { id: uid(), type: "expense", amount: 300000, category: "Hobby", paymentMethod: "Cash", date: iso(1, 15), note: "Hobi" },
   ];
 }
@@ -106,12 +121,32 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const reload = useCallback(async () => {
     if (!supabase || !user) return;
     setLoading(true);
-    const [txRes, bRes, gRes] = await Promise.all([
-      supabase.from("transactions").select("id,type,amount,category,payment_method,date,note").order("date", { ascending: false }),
+
+    const baseCols = "id,type,amount,category,payment_method,date,note";
+    const first = await supabase
+      .from("transactions")
+      .select(instrumentSupported ? `${baseCols},instrument` : baseCols)
+      .order("date", { ascending: false });
+
+    let rows: TxRow[] | null = (first.data as unknown as TxRow[]) ?? null;
+
+    // Kalau kolom `instrument` belum ada di database, aplikasi tetap jalan
+    // (fitur bentuk investasi otomatis nonaktif sampai migrasi dijalankan).
+    if (first.error && instrumentSupported) {
+      instrumentSupported = false;
+      const retry = await supabase
+        .from("transactions")
+        .select(baseCols)
+        .order("date", { ascending: false });
+      rows = (retry.data as unknown as TxRow[]) ?? null;
+    }
+
+    const [bRes, gRes] = await Promise.all([
       supabase.from("budgets").select("category,limit"),
       supabase.from("goals").select("id,name,target,saved,deadline").order("created_at", { ascending: false }),
     ]);
-    if (txRes.data) setTransactions((txRes.data as TxRow[]).map(rowToTx));
+
+    if (rows) setTransactions(rows.map(rowToTx));
     if (bRes.data) setBudgets(bRes.data.map((b) => ({ category: b.category as string, limit: Number(b.limit) })));
     if (gRes.data)
       setGoals(
@@ -203,7 +238,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (cloud && user && supabase) {
           supabase
             .from("transactions")
-            .insert({ id, ...txToRow(t, user.id) })
+            .insert({ id, ...txPayload(t, user.id) })
             .then(({ error }) => { if (error) gagal("menyimpan transaksi", error.message); });
         }
       },
@@ -214,7 +249,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (cloud && user && supabase) {
           supabase
             .from("transactions")
-            .update(txToRow(t, user.id))
+            .update(txPayload(t, user.id))
             .eq("id", id)
             .then(({ error }) => { if (error) gagal("memperbarui transaksi", error.message); });
         }
@@ -250,7 +285,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (cloud && user && supabase) {
           supabase
             .from("transactions")
-            .insert(tx.map((t) => ({ id: t.id || uid(), ...txToRow(t, user.id) })))
+            .insert(tx.map((t) => ({ id: t.id || uid(), ...txPayload(t, user.id) })))
             .then(({ error }) => { if (error) gagal("mengimpor data", error.message); });
         }
       },

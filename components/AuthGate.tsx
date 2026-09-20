@@ -25,7 +25,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       <div className="container" style={{ paddingTop: 60 }}>
         <div className="card" style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>💙</div>
-          <b>Memuat data Tania...</b>
+          <b>Memuat data keuanganmu...</b>
           <p className="sub" style={{ marginTop: 6 }}>Menyambungkan ke database.</p>
         </div>
       </div>

@@ -8,6 +8,7 @@ export interface Transaction {
   amount: number;
   category: string;
   paymentMethod?: PaymentMethod; // hanya untuk expense
+  instrument?: string; // hanya untuk kategori investasi (Gold, Stock, dst)
   date: string; // ISO yyyy-mm-dd
   note: string;
 }

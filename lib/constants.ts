@@ -36,6 +36,44 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
   "Kartu Kredit",
 ];
 
+// Bentuk / instrumen investasi
+export const INVESTMENT_INSTRUMENTS = [
+  "Gold",
+  "Stock",
+  "Foreign Currency",
+  "Bonds",
+  "Mutual Fund",
+  "Crypto",
+  "Time Deposit",
+  "Property",
+  "P2P Lending",
+  "Lainnya",
+] as const;
+
+// Kategori yang dianggap sebagai investasi
+export const INVESTMENT_CATEGORIES = ["Invest", "Investasi", "Dividen"];
+
+export function isInvestmentCategory(category: string): boolean {
+  return INVESTMENT_CATEGORIES.includes(category);
+}
+
+export const INSTRUMENT_COLORS: Record<string, string> = {
+  Gold: "#c9a96a",
+  Stock: "#1e5aa8",
+  "Foreign Currency": "#2f7d62",
+  Bonds: "#163a6b",
+  "Mutual Fund": "#4a86d4",
+  Crypto: "#8a5cf6",
+  "Time Deposit": "#7a9cc6",
+  Property: "#a5814f",
+  "P2P Lending": "#3b82c4",
+  Lainnya: "#b8ab8e",
+};
+
+export function colorForInstrument(name: string): string {
+  return INSTRUMENT_COLORS[name] ?? "#b8ab8e";
+}
+
 // Palet biru + beige untuk Tania
 export const CATEGORY_COLORS: Record<string, string> = {
   Salary: "#1e5aa8",

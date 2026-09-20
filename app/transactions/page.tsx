@@ -47,7 +47,7 @@ export default function TransactionsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "transactions-tania.csv";
+    a.download = "transactions.csv";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -57,7 +57,7 @@ export default function TransactionsPage() {
   return (
     <div>
       <header className="hero">
-        <div className="hero-eyebrow">🧾 Transaksi — Tania</div>
+        <div className="hero-eyebrow">🧾 Transaction</div>
         <h1>Semua pemasukan &amp; pengeluaranmu.</h1>
         <p>
           Hasil filter: <b style={{ color: "#9fe0b4" }}>+{formatIDR(sumIn)}</b> income ·{" "}
@@ -66,7 +66,7 @@ export default function TransactionsPage() {
         <div className="hero-actions">
           <button className="btn sand" onClick={() => setShowAdd(true)}>＋ Tambah Transaksi</button>
           <button className="btn ghost-light" onClick={exportCSV}>⬇ Export CSV</button>
-          <button className="btn ghost-light" onClick={() => { if (confirm("Hapus semua transaksi Tania?")) clearAll(); }}>🗑 Hapus Semua</button>
+          <button className="btn ghost-light" onClick={() => { if (confirm("Hapus semua transaksi?")) clearAll(); }}>🗑 Hapus Semua</button>
         </div>
       </header>
 
@@ -116,7 +116,7 @@ export default function TransactionsPage() {
         <div className="table-wrap" style={{ border: "none", borderRadius: 0 }}>
           <table className="tbl">
             <thead>
-              <tr><th>Tanggal</th><th>Tipe</th><th>Kategori</th><th>Metode</th><th>Catatan</th><th style={{ textAlign: "right" }}>Nominal</th><th>Aksi</th></tr>
+              <tr><th>Tanggal</th><th>Tipe</th><th>Kategori</th><th>Bentuk</th><th>Metode</th><th>Catatan</th><th style={{ textAlign: "right" }}>Nominal</th><th>Aksi</th></tr>
             </thead>
             <tbody>
               {list.map((t) => (
@@ -124,6 +124,7 @@ export default function TransactionsPage() {
                   <td><b>{t.date}</b></td>
                   <td><span className={`pill ${t.type}`}>{t.type === "income" ? "💰 income" : "🧾 expense"}</span></td>
                   <td>{t.category}</td>
+                  <td>{t.instrument ? <span className="pill sand">{t.instrument}</span> : <span className="sub">-</span>}</td>
                   <td>{t.type === "expense" ? <span className="pill method">{t.paymentMethod}</span> : <span className="sub">-</span>}</td>
                   <td style={{ whiteSpace: "normal", minWidth: 140 }}>{t.note || <span className="sub">-</span>}</td>
                   <td style={{ textAlign: "right", fontWeight: 800, color: t.type === "income" ? "#1e7a4c" : "#b34434" }}>
@@ -138,7 +139,7 @@ export default function TransactionsPage() {
                 </tr>
               ))}
               {list.length === 0 && (
-                <tr><td colSpan={7}><div className="empty"><span className="big-emoji">🔍</span>Tidak ada transaksi yang cocok.<br />Ubah filter atau tambah transaksi baru.</div></td></tr>
+                <tr><td colSpan={8}><div className="empty"><span className="big-emoji">🔍</span>Tidak ada transaksi yang cocok.<br />Ubah filter atau tambah transaksi baru.</div></td></tr>
               )}
             </tbody>
           </table>

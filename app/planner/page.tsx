@@ -34,7 +34,7 @@ export default function PlannerPage() {
   return (
     <div>
       <header className="hero">
-        <div className="hero-eyebrow">🎯 Planner &amp; Budget — Tania</div>
+        <div className="hero-eyebrow">🎯 Planner &amp; Budget</div>
         <h1>Rencanakan bulanmu dengan tenang.</h1>
         <p>
           Periode <b style={{ color: "#fff" }}>{monthLabel(month)}</b> • Total budget{" "}
@@ -169,7 +169,7 @@ export default function PlannerPage() {
         </div>
 
         <div className="insight-box mt">
-          <b>💡 Rumus 50/30/20 untuk Tania:</b>
+          <b>💡 Rumus 50/30/20:</b>
           <div className="sub" style={{ marginTop: 4 }}>
             50% kebutuhan (Housing, Food, Transport, Utilities) • 30% keinginan (Hobby, Entertainment, Shopping, Family) •
             20% masa depan (Saving, Invest). Cash flow positif = income &gt; expense.

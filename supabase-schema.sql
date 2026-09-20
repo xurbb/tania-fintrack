@@ -14,6 +14,7 @@ create table if not exists public.transactions (
   amount         bigint not null check (amount >= 0),
   category       text not null,
   payment_method text,
+  instrument     text,
   date           date not null,
   note           text default '',
   created_at     timestamptz not null default now()

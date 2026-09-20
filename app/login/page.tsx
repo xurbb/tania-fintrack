@@ -79,7 +79,7 @@ export default function LoginPage() {
   return (
     <div style={{ maxWidth: 430, margin: "36px auto" }}>
       <header className="hero" style={{ padding: "22px 24px" }}>
-        <div className="hero-eyebrow">💙 Tania&apos;s FinTrack</div>
+        <div className="hero-eyebrow">💙 Your Personal FinTrack</div>
         <h1 style={{ fontSize: 22 }}>{mode === "login" ? "Masuk ke akunmu" : "Buat akun baru"}</h1>
         <p>Login sekali, data keuanganmu tersinkron di HP, laptop, dan tablet.</p>
       </header>
@@ -93,7 +93,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="tania@email.com"
+              placeholder="nama@email.com"
               autoComplete="email"
               required
             />

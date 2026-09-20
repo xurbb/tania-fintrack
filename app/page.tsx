@@ -56,8 +56,8 @@ export default function Dashboard() {
     <div>
       {/* HERO */}
       <header className="hero">
-        <div className="hero-eyebrow">💙 Financial Tracker &amp; Planner — Tania</div>
-        <h1>Halo, Tania! Ini ringkasan keuanganmu.</h1>
+        <div className="hero-eyebrow">💙 Your Personal FinTrack</div>
+        <h1>Halo! Ini ringkasan keuanganmu.</h1>
         <p>
           Periode aktif: <b style={{ color: "#fff" }}>{periodLabel}</b> •{" "}
           {filtered.length} transaksi • Cash flow{" "}

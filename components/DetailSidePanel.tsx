@@ -2,7 +2,7 @@
 
 import { Transaction } from "@/lib/types";
 import { formatIDR } from "@/lib/utils";
-import { colorForCategory } from "@/lib/constants";
+import { colorForCategory, colorForInstrument, INVESTMENT_INSTRUMENTS } from "@/lib/constants";
 import CategoryChart from "@/components/CategoryChart";
 
 export type DetailTab = "income" | "expenses" | "cashflow" | "saving" | "investment";
@@ -118,7 +118,7 @@ export function DetailContent({
     return (
       <div className="card">
         <PanelHead
-          icon="💰" title="Income Tania" desc={`${incomes.length} pos pemasukan pada periode ini`}
+          icon="💰" title="Income" desc={`${incomes.length} pos pemasukan pada periode ini`}
           action={<button className="btn sand sm" onClick={onAddIncome}>＋ Tambah Income</button>}
         />
         <div className="grid grid-3 mt">
@@ -170,7 +170,7 @@ export function DetailContent({
     return (
       <div className="card">
         <PanelHead
-          icon="🧾" title="Expenses Tania" desc={`${expenses.length} pos pengeluaran pada periode ini`}
+          icon="🧾" title="Expenses" desc={`${expenses.length} pos pengeluaran pada periode ini`}
           action={<button className="btn primary sm" onClick={onAddExpense}>＋ Tambah Expense</button>}
         />
         <div className="grid grid-3 mt">
@@ -219,7 +219,7 @@ export function DetailContent({
     const good = net >= 0;
     return (
       <div className="card">
-        <PanelHead icon="📊" title="Cash Flow Tania" desc="Selisih income dan expense — penentu kesehatan keuangan" />
+        <PanelHead icon="📊" title="Cash Flow" desc="Selisih income dan expense — penentu kesehatan keuangan" />
         <div className="grid grid-3 mt">
           <Stat k="Income" v={formatIDR(totalIn)} s="Total masuk" />
           <Stat k="Expense" v={formatIDR(totalOut)} s="Total keluar" />
@@ -227,7 +227,7 @@ export function DetailContent({
         </div>
         <div className={`insight-box ${good ? "good" : "bad"} mt`}>
           {good
-            ? `✅ Surplus ${formatIDR(net)}. Bagus, Tania! Sisihkan minimal 20% ke Saving & Investasi sebelum belanja keinginan.`
+            ? `✅ Surplus ${formatIDR(net)}. Bagus! Sisihkan minimal 20% ke Saving & Investasi sebelum belanja keinginan.`
             : `⚠️ Defisit ${formatIDR(Math.abs(net))}. Coba pangkas 10–15% dari Hobby, Entertainment, atau Shopping bulan ini.`}
         </div>
         <h4 style={{ margin: "14px 0 8px", fontSize: 14 }}>Rincian bulanan</h4>
@@ -254,14 +254,14 @@ export function DetailContent({
     return (
       <div className="card">
         <PanelHead
-          icon="🏦" title="Saving Tania" desc="Dana yang disisihkan + progres tiap goal"
+          icon="🏦" title="Saving" desc="Dana yang disisihkan + progres tiap goal"
           action={<button className="btn primary sm" onClick={onAddExpense}>＋ Tambah Saving</button>}
         />
         <div className="grid grid-2 mt">
           <Stat k="Total saving" v={formatIDR(totalSaving)} s={`${savingTx.length} pos kategori Saving`} />
           <Stat k="Porsi dari income" v={`${pctIncome.toFixed(1)}%`} s={pctIncome >= 20 ? "Sudah ideal 🎉" : "Target ideal ≥ 20%"} />
         </div>
-        <h4 style={{ margin: "14px 0 8px", fontSize: 14 }}>Goals Tania</h4>
+        <h4 style={{ margin: "14px 0 8px", fontSize: 14 }}>Goals</h4>
         {goals.map((g) => {
           const pct = g.target > 0 ? Math.min(100, (g.saved / g.target) * 100) : 0;
           return (
@@ -282,10 +282,23 @@ export function DetailContent({
   const investOut = filtered.filter((t) => t.type === "expense" && t.category === "Invest").reduce((s, t) => s + t.amount, 0);
   const investIn = filtered.filter((t) => t.type === "income" && (t.category === "Investasi" || t.category === "Dividen")).reduce((s, t) => s + t.amount, 0);
   const investTx = filtered.filter((t) => t.category === "Invest" || t.category === "Investasi" || t.category === "Dividen");
+
+  const byInstrument = new Map<string, number>();
+  filtered
+    .filter((t) => t.type === "expense" && t.category === "Invest")
+    .forEach((t) => {
+      const key = t.instrument ?? "Belum ditentukan";
+      byInstrument.set(key, (byInstrument.get(key) ?? 0) + t.amount);
+    });
+  const instrumentArr = Array.from(byInstrument.entries())
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+  const totalInstrument = instrumentArr.reduce((s, x) => s + x.value, 0);
+
   return (
     <div className="card">
       <PanelHead
-        icon="📈" title="Investment Tania" desc="Modal yang ditanam vs return yang kembali"
+        icon="📈" title="Investment" desc="Modal yang ditanam vs return yang kembali"
         action={<button className="btn primary sm" onClick={onAddExpense}>＋ Tambah Investasi</button>}
       />
       <div className="grid grid-3 mt">
@@ -293,16 +306,52 @@ export function DetailContent({
         <Stat k="Return (masuk)" v={formatIDR(investIn)} s="Investasi + Dividen" />
         <Stat k="Net investasi" v={formatIDR(investIn - investOut)} s="Return − Modal" />
       </div>
-      <div className="insight-box mt">
-        💡 Strategi Tania: alokasikan 10–20% income ke Invest di awal bulan (<i>pay yourself first</i>), konsisten tiap gajian.
+
+      <div className="grid grid-2 mt">
+        <div>
+          <b style={{ fontSize: 13 }}>Alokasi per bentuk investasi</b>
+          <div className="mt">
+            {instrumentArr.map((x) => (
+              <div key={x.name} style={{ marginBottom: 11 }}>
+                <div className="space-between" style={{ fontSize: 13 }}>
+                  <span>
+                    <span className="dot" style={{ background: colorForInstrument(x.name) }} />
+                    {x.name}
+                  </span>
+                  <b>{formatIDR(x.value)}</b>
+                </div>
+                <div className="progress" style={{ marginTop: 5 }}>
+                  <div style={{ width: `${totalInstrument ? (x.value / totalInstrument) * 100 : 0}%`, background: colorForInstrument(x.name) }} />
+                </div>
+              </div>
+            ))}
+            {instrumentArr.length === 0 && (
+              <div className="empty"><span className="big-emoji">🥇</span>Belum ada pos investasi.<br />Tambahkan dan pilih bentuknya: Gold, Stock, Bonds, dll.</div>
+            )}
+          </div>
+        </div>
+        <div>
+          <b style={{ fontSize: 13 }}>Bentuk investasi tersedia</b>
+          <div className="mt row" style={{ gap: 6 }}>
+            {INVESTMENT_INSTRUMENTS.map((m) => (
+              <span key={m} className="pill sand">{m}</span>
+            ))}
+          </div>
+          <div className="insight-box mt">
+            💡 Strategi: alokasikan 10–20% income ke Invest di awal bulan (<i>pay yourself first</i>), dan sebar ke beberapa bentuk agar risiko tidak menumpuk di satu instrumen.
+          </div>
+        </div>
       </div>
+
       <h4 style={{ margin: "14px 0 8px", fontSize: 14 }}>Transaksi investasi</h4>
       <div className="table-wrap"><table className="tbl">
-        <thead><tr><th>Tanggal</th><th>Tipe</th><th>Kategori</th><th>Catatan</th><th style={{ textAlign: "right" }}>Nominal</th></tr></thead>
+        <thead><tr><th>Tanggal</th><th>Tipe</th><th>Kategori</th><th>Bentuk</th><th>Catatan</th><th style={{ textAlign: "right" }}>Nominal</th></tr></thead>
         <tbody>{investTx.slice(0, 8).map((t) => (
-          <tr key={t.id}><td>{t.date}</td><td><span className={`pill ${t.type}`}>{t.type}</span></td><td>{t.category}</td><td>{t.note || <span className="sub">-</span>}</td>
+          <tr key={t.id}><td>{t.date}</td><td><span className={`pill ${t.type}`}>{t.type}</span></td><td>{t.category}</td>
+          <td>{t.instrument ? <span className="pill sand">{t.instrument}</span> : <span className="sub">-</span>}</td>
+          <td>{t.note || <span className="sub">-</span>}</td>
           <td style={{ textAlign: "right" }}><b>{formatIDR(t.amount)}</b></td></tr>
-        ))}{investTx.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center" }} className="sub">Belum ada pos investasi.</td></tr>}</tbody>
+        ))}{investTx.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center" }} className="sub">Belum ada pos investasi.</td></tr>}</tbody>
       </table></div>
     </div>
   );

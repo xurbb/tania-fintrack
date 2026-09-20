@@ -7,8 +7,8 @@ import FinanceChatbot from "@/components/FinanceChatbot";
 import AuthGate from "@/components/AuthGate";
 
 export const metadata: Metadata = {
-  title: "Tania — Financial Tracker & Planner",
-  description: "Financial tracker & planner pribadi Tania: income, expenses, cash flow, saving, dan investment.",
+  title: "Your Personal FinTrack",
+  description: "Manage Money Better and Wiser, Get Richer Faster! — financial tracker & planner: income, expenses, cash flow, saving, dan investment.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <AuthGate>{children}</AuthGate>
               </main>
               <footer className="footer">
-                Dibuat dengan 💙 untuk <b>Tania</b> • Income · Expenses · Cash Flow · Saving · Investment
+                Made with 💙 by <b>Tania</b> to Manage Money Better and Wiser
               </footer>
               <FinanceChatbot />
             </div>

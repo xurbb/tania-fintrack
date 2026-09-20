@@ -23,7 +23,7 @@ const SUGGESTIONS = [
   "Cicilan 800 rb/bln aman nggak?",
   "Siap ambil keputusan besar?",
   "Berapa cash flow saya?",
-  "Tips nabung untuk Tania?",
+  "Tips nabung untukku?",
 ];
 
 /* ---------- Parsing nominal (Rp, juta/jt, ribu/rb/k, miliar, 5.000.000) ---------- */
@@ -102,7 +102,7 @@ function extractItem(input: string, amountRaw: string | null): string {
 function adviceDecision(item: string, amount: number, ctx: Ctx, installment: boolean): string {
   const mi = ctx.monthlyIncome;
   if (mi <= 0)
-    return `Aku belum bisa memberi pendapat soal ${item} (${formatIDR(amount)}) karena data income Tania masih kosong. Tambahkan dulu pos income (misal Salary bulan ini), lalu tanya lagi ya — biar pendapatku berdasar angka nyata, bukan tebakan.`;
+    return `Aku belum bisa memberi pendapat soal ${item} (${formatIDR(amount)}) karena data incomemu masih kosong. Tambahkan dulu pos income (misal Salary bulan ini), lalu tanya lagi ya — biar pendapatku berdasar angka nyata, bukan tebakan.`;
 
   const ratio = amount / mi;
   const verdict: string[] = [];
@@ -135,12 +135,12 @@ function adviceDecision(item: string, amount: number, ctx: Ctx, installment: boo
 
   const head =
     level === "aman"
-      ? `💡 Pendapatku: GAS, Tania — ${item} (${formatIDR(amount)}) TERJANGKAU buat kondisi keuanganmu saat ini. ✅`
+      ? `💡 Pendapatku: GAS — ${item} (${formatIDR(amount)}) TERJANGKAU buat kondisi keuanganmu saat ini. ✅`
       : level === "syarat"
-        ? `💡 Pendapatku: BOLEH, Tania — tapi dengan syarat. ${item} (${formatIDR(amount)}) masih masuk akal, asal aturannya dipatuhi. ✅⚠️`
+        ? `💡 Pendapatku: BOLEH — tapi dengan syarat. ${item} (${formatIDR(amount)}) masih masuk akal, asal aturannya dipatuhi. ✅⚠️`
         : level === "risiko"
-          ? `💡 Pendapatku sejujurnya: PIKIR ULANG dulu, Tania. ${item} (${formatIDR(amount)}) cukup berat untuk kondisi saat ini. ⚠️`
-          : `💡 Pendapatku sejujurnya: TAHAN DULU, Tania. ${item} (${formatIDR(amount)}) belum aman untuk kondisi saat ini. ⛔`;
+          ? `💡 Pendapatku sejujurnya: PIKIR ULANG dulu. ${item} (${formatIDR(amount)}) cukup berat untuk kondisi saat ini. ⚠️`
+          : `💡 Pendapatku sejujurnya: TAHAN DULU. ${item} (${formatIDR(amount)}) belum aman untuk kondisi saat ini. ⛔`;
 
   const after = !installment && (level === "risiko" || level === "tahan") && ctx.monthlyNet > 0
     ? `\n\n🔁 Alternatif yang lebih ringan:\n• Nabung ${formatIDR(Math.round(Math.max(ctx.monthlyNet * 0.5, 1)))} /bln (50% surplus) → terkumpul dalam ±${Math.ceil(amount / Math.max(ctx.monthlyNet * 0.5, 1))} bulan.\n• Cari opsi second / turun spek 30–40% lebih murah.\n• Kalau mendesak, bagi jadi cicilan dengan tenor pendek — tanya aku "cicilan X per bulan aman nggak?" dan aku hitungkan.`
@@ -170,7 +170,7 @@ function readinessAdvice(ctx: Ctx): string {
     score >= 75 ? "✅ SIAP — silakan ambil keputusan besar dengan percaya diri, tetap catat di tracker."
       : score >= 50 ? "⚠️ SIAP BERSYARAT — boleh jalan, tapi amankan dulu poin yang masih 0 di atas."
         : "⛔ BELUM SIAP — fokus 1–2 bulan ke depan untuk memperbaiki poin di atas sebelum komitmen besar.";
-  return `🎯 Skor kesiapan finansial Tania: ${score}/100\n\n${rows.join("\n")}\n\n${verdict}\n\nCoba diskusikan rencana spesifiknya, misal "mau beli laptop 8 juta, gimana menurutmu?" — aku beri pendapat lengkap dengan angkanya.`;
+  return `🎯 Skor kesiapan finansialmu: ${score}/100\n\n${rows.join("\n")}\n\n${verdict}\n\nCoba diskusikan rencana spesifiknya, misal "mau beli laptop 8 juta, gimana menurutmu?" — aku beri pendapat lengkap dengan angkanya.`;
 }
 
 function compareAdvice(amounts: number[], ctx: Ctx, input: string): string {
@@ -194,11 +194,11 @@ function botAnswer(
   const keep = (m: DecisionMemory | null) => ({ reply: "", memory: m });
 
   if (/terima kasih|makasih|thanks/.test(q))
-    return { reply: "Sama-sama, Tania! 💙 Senang bisa bantu. Jaga cash flow tetap positif ya!", memory };
+    return { reply: "Sama-sama! 💙 Senang bisa bantu. Jaga cash flow tetap positif ya!", memory };
 
   if (/halo|hai|pagi|siang|sore|malam|hello/.test(q) && !/beli|ambil|cicil|kredit|menurut|pendapat|mending|keputusan/.test(q))
     return {
-      reply: "Halo Tania! 💙 Aku FinBuddy — bisa jawab soal income, expenses, cash flow, saving, investment, dan yang baru: diskusi keputusan finansial. Coba misal \"mau beli HP 3 juta, gimana menurutmu?\"",
+      reply: "Halo! 💙 Aku FinBuddy — bisa jawab soal income, expenses, cash flow, saving, investment, dan yang baru: diskusi keputusan finansial. Coba misal \"mau beli HP 3 juta, gimana menurutmu?\"",
       memory,
     };
 
@@ -219,7 +219,7 @@ function botAnswer(
     const target = sorted[sorted.length - 1];
     const n = Math.ceil(target / perMonth);
     return {
-      reply: `🧮 Simulasinya, Tania:\n• Target: ${formatIDR(target)}\n• Nabung: ${formatIDR(perMonth)}/bln\n• Estimasi: ±${n} bulan (${Math.floor(n / 12) > 0 ? `${Math.floor(n / 12)} tahun ` : ""}${n % 12} bulan).\n\n${perMonth > ctx.monthlyNet && ctx.monthlyNet > 0 ? `⚠️ Hati-hati: nominal nabung ini di atas surplus bulananmu (${formatIDR(ctx.monthlyNet)}). Turunkan sedikit atau pangkas expense non-esensial.` : "✅ Skema ini realistis. Otomatiskan transfernya tiap awal bulan biar konsisten."}`,
+      reply: `🧮 Simulasinya:\n• Target: ${formatIDR(target)}\n• Nabung: ${formatIDR(perMonth)}/bln\n• Estimasi: ±${n} bulan (${Math.floor(n / 12) > 0 ? `${Math.floor(n / 12)} tahun ` : ""}${n % 12} bulan).\n\n${perMonth > ctx.monthlyNet && ctx.monthlyNet > 0 ? `⚠️ Hati-hati: nominal nabung ini di atas surplus bulananmu (${formatIDR(ctx.monthlyNet)}). Turunkan sedikit atau pangkas expense non-esensial.` : "✅ Skema ini realistis. Otomatiskan transfernya tiap awal bulan biar konsisten."}`,
       memory,
     };
   }
@@ -238,7 +238,7 @@ function botAnswer(
   // Follow-up tanpa nominal tapi ada konteks ("gimana menurutmu?", "kalau yang 5 juta?")
   if (!parsed && opinionSeeking && memory && /menurut|pendapat|gimana|bagaimana|worth|layak|jadi|oke|setuju/.test(q)) {
     return {
-      reply: `Masih soal ${memory.item} (${formatIDR(memory.amount)}) ya, Tania? Pendapat jujurku tetap seperti di atas 👆 — ${memory.amount > ctx.monthlyIncome * 0.35 && ctx.monthlyIncome > 0 ? "ini bukan pengeluaran kecil, jadi pastikan dana daruratmu tidak tersentuh." : "ini masih wajar, asal dicatat dan tidak mengganggu pos Saving bulan ini."}\n\nKalau nominalnya beda, sebutkan angkanya (misal "kalau yang 5 juta gimana?") dan aku hitung ulang. Atau ceritakan: ini kebutuhan mendesak atau keinginan? Jawabanmu mengubah pendapatku.`,
+      reply: `Masih soal ${memory.item} (${formatIDR(memory.amount)}) ya? Pendapat jujurku tetap seperti di atas 👆 — ${memory.amount > ctx.monthlyIncome * 0.35 && ctx.monthlyIncome > 0 ? "ini bukan pengeluaran kecil, jadi pastikan dana daruratmu tidak tersentuh." : "ini masih wajar, asal dicatat dan tidak mengganggu pos Saving bulan ini."}\n\nKalau nominalnya beda, sebutkan angkanya (misal "kalau yang 5 juta gimana?") dan aku hitung ulang. Atau ceritakan: ini kebutuhan mendesak atau keinginan? Jawabanmu mengubah pendapatku.`,
       memory,
     };
   }
@@ -247,38 +247,38 @@ function botAnswer(
   if (decisionSignal && !parsed) {
     void keep;
     return {
-      reply: `Boleh banget kita diskusikan, Tania! 🤝 Biar pendapatku tepat, ceritakan:\n1. Rencananya apa? (misal beli HP, ambil cicilan motor, liburan)\n2. Berapa nominalnya? (misal 3 juta / cicilan 800rb per bulan)\n3. Kebutuhan mendesak atau keinginan?\n\nContoh: "mau beli laptop 8 juta untuk kerja, gimana menurutmu?"`,
+      reply: `Boleh banget kita diskusikan! 🤝 Biar pendapatku tepat, ceritakan:\n1. Rencananya apa? (misal beli HP, ambil cicilan motor, liburan)\n2. Berapa nominalnya? (misal 3 juta / cicilan 800rb per bulan)\n3. Kebutuhan mendesak atau keinginan?\n\nContoh: "mau beli laptop 8 juta untuk kerja, gimana menurutmu?"`,
       memory,
     };
   }
 
   if (/cash ?flow|arus kas|surplus|defisit|net/.test(q))
     return {
-      reply: `Cash flow Tania saat ini:\n• Income: ${formatIDR(ctx.totalIn)}\n• Expense: ${formatIDR(ctx.totalOut)}\n• Net: ${formatIDR(ctx.net)} (${ctx.net >= 0 ? "surplus 🎉" : "defisit ⚠️"})\n• Savings rate: ${ctx.rate.toFixed(1)}% (ideal ≥ 20%)\n\n${ctx.net >= 0 ? "Pertahankan! Sisihkan surplus ke Saving/Invest sebelum belanja keinginan." : "Saran: pangkas 10-15% dari kategori Hobby/Entertainment/Shopping bulan ini."}`,
+      reply: `Cash flow-mu saat ini:\n• Income: ${formatIDR(ctx.totalIn)}\n• Expense: ${formatIDR(ctx.totalOut)}\n• Net: ${formatIDR(ctx.net)} (${ctx.net >= 0 ? "surplus 🎉" : "defisit ⚠️"})\n• Savings rate: ${ctx.rate.toFixed(1)}% (ideal ≥ 20%)\n\n${ctx.net >= 0 ? "Pertahankan! Sisihkan surplus ke Saving/Invest sebelum belanja keinginan." : "Saran: pangkas 10-15% dari kategori Hobby/Entertainment/Shopping bulan ini."}`,
       memory,
     };
 
   if (/pengeluaran terbesar|boros|expenses? terbesar|belanja/.test(q))
     return {
-      reply: `Pengeluaran terbesar Tania adalah kategori ${ctx.topExpense} sebesar ${formatIDR(ctx.topExpenseAmt)}.\n\nCek tab Expenses di side-panel untuk rincian per kategori dan metode bayar (Cash/QRIS/Transfer). Kalau ${ctx.topExpense} non-esensial, coba batasi 10% lebih rendah bulan depan.`,
+      reply: `Pengeluaran terbesarmu adalah kategori ${ctx.topExpense} sebesar ${formatIDR(ctx.topExpenseAmt)}.\n\nCek tab Expenses di side-panel untuk rincian per kategori dan metode bayar (Cash/QRIS/Transfer). Kalau ${ctx.topExpense} non-esensial, coba batasi 10% lebih rendah bulan depan.`,
       memory,
     };
 
   if (/saving|tabung|nabung|dana darurat/.test(q))
     return {
-      reply: `Total pos Saving Tania: ${formatIDR(ctx.totalSaving)} (≈ ${ctx.emergencyMonths.toFixed(1)} bulan pengeluaran).\n\nIdealnya 20% income untuk saving+invest. ${ctx.overBudgets.length ? `Perhatian budget over: ${ctx.overBudgets.join(", ")}.` : "Budget kategori aman sejauh ini."} Buka tab Saving untuk progres tiap goal.`,
+      reply: `Total pos Saving-mu: ${formatIDR(ctx.totalSaving)} (≈ ${ctx.emergencyMonths.toFixed(1)} bulan pengeluaran).\n\nIdealnya 20% income untuk saving+invest. ${ctx.overBudgets.length ? `Perhatian budget over: ${ctx.overBudgets.join(", ")}.` : "Budget kategori aman sejauh ini."} Buka tab Saving untuk progres tiap goal.`,
       memory,
     };
 
   if (/invest/.test(q))
     return {
-      reply: `Ringkasan investasi Tania:\n• Modal keluar (Invest): ${formatIDR(ctx.investOut)}\n• Return masuk (Investasi+Dividen): ${formatIDR(ctx.investIn)}\n• Net: ${formatIDR(ctx.investIn - ctx.investOut)}\n\nStrategi simpel: rutin tiap gajian, pisahkan dana darurat dulu 3-6x pengeluaran, baru kejar return. Atau diskusikan rencana spesifik, misal "mau investasi 2 juta per bulan, aman nggak?"`,
+      reply: `Ringkasan investasimu:\n• Modal keluar (Invest): ${formatIDR(ctx.investOut)}\n• Return masuk (Investasi+Dividen): ${formatIDR(ctx.investIn)}\n• Net: ${formatIDR(ctx.investIn - ctx.investOut)}\n\nStrategi simpel: rutin tiap gajian, pisahkan dana darurat dulu 3-6x pengeluaran, baru kejar return. Atau diskusikan rencana spesifik, misal "mau investasi 2 juta per bulan, aman nggak?"`,
       memory,
     };
 
   if (/income|penghasilan|gaji|salary|bonus|dividen/.test(q))
     return {
-      reply: `Total income Tania: ${formatIDR(ctx.totalIn)}.\nSumber terbesar biasanya Salary, dilengkapi Bonus/Dividen/Freelance. Tambah pos income baru lewat tombol + Income di side-panel. Diversifikasi income (misal freelance/dividen) bikin cash flow lebih aman.`,
+      reply: `Total incomemu: ${formatIDR(ctx.totalIn)}.\nSumber terbesar biasanya Salary, dilengkapi Bonus/Dividen/Freelance. Tambah pos income baru lewat tombol + Income di side-panel. Diversifikasi income (misal freelance/dividen) bikin cash flow lebih aman.`,
       memory,
     };
 
@@ -292,7 +292,7 @@ function botAnswer(
 
   if (/tips|hemat|saran|atur|kelola/.test(q))
     return {
-      reply: "Tips untuk Tania (50/30/20):\n• 50% kebutuhan: Housing, Food, Transport, Utilities\n• 30% keinginan: Hobby, Family, Entertainment\n• 20% masa depan: Saving + Invest\n\nOtomatiskan transfer Saving/Invest di awal bulan, pakai QRIS/Transfer agar tercatat rapi, dan review cash flow tiap minggu.",
+      reply: "Tips untukmu (50/30/20):\n• 50% kebutuhan: Housing, Food, Transport, Utilities\n• 30% keinginan: Hobby, Family, Entertainment\n• 20% masa depan: Saving + Invest\n\nOtomatiskan transfer Saving/Invest di awal bulan, pakai QRIS/Transfer agar tercatat rapi, dan review cash flow tiap minggu.",
       memory,
     };
 
@@ -308,7 +308,7 @@ export default function FinanceChatbot() {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [msgs, setMsgs] = useState<Msg[]>([
-    { role: "bot", text: "Halo Tania! 💙 Aku FinBuddy. Tanya info keuanganmu, atau ajak aku diskusi keputusan — misal \"mau beli HP 3 juta, gimana menurutmu?\" / \"cicilan 800rb per bulan aman nggak?\"" },
+    { role: "bot", text: "Halo! 💙 Aku FinBuddy. Tanya info keuanganmu, atau ajak aku diskusi keputusan — misal \"mau beli HP 3 juta, gimana menurutmu?\" / \"cicilan 800rb per bulan aman nggak?\"" },
   ]);
   const [lastDecision, setLastDecision] = useState<DecisionMemory | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -363,7 +363,7 @@ export default function FinanceChatbot() {
       {open && (
         <div className="chat-window">
           <div className="chat-head">
-            <b>💬 FinBuddy — Diskusi Finansial Tania</b>
+            <b>💬 FinBuddy — Diskusi Finansial</b>
             <p>Info keuangan • pendapat keputusan • simulasi nabung/cicil</p>
           </div>
           <div className="chat-body" ref={bodyRef}>

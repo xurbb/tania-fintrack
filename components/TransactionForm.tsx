@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS } from "@/lib/constants";
+import {
+  EXPENSE_CATEGORIES,
+  INCOME_CATEGORIES,
+  INVESTMENT_INSTRUMENTS,
+  PAYMENT_METHODS,
+  isInvestmentCategory,
+} from "@/lib/constants";
 import { PaymentMethod, Transaction, TransactionType } from "@/lib/types";
 import { todayISO } from "@/lib/utils";
 
@@ -26,8 +32,10 @@ export default function TransactionForm({
   );
   const [date, setDate] = useState(initial?.date ?? todayISO());
   const [note, setNote] = useState(initial?.note ?? "");
+  const [instrument, setInstrument] = useState(initial?.instrument ?? "Gold");
 
   const cats = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const isInvest = isInvestmentCategory(category);
 
   // reset kategori saat tipe berubah
   const handleType = (t: TransactionType) => {
@@ -51,6 +59,7 @@ export default function TransactionForm({
       amount: Math.round(amt),
       category,
       paymentMethod: type === "expense" ? paymentMethod : undefined,
+      instrument: isInvest ? instrument : undefined,
       date,
       note: note.trim(),
     });
@@ -110,6 +119,22 @@ export default function TransactionForm({
             ))}
           </select>
         </div>
+        {isInvest && (
+          <div>
+            <label className="lbl">Bentuk Investasi</label>
+            <select
+              className="select"
+              value={instrument}
+              onChange={(e) => setInstrument(e.target.value)}
+            >
+              {INVESTMENT_INSTRUMENTS.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         {type === "expense" && (
           <div>
             <label className="lbl">Metode Pembayaran</label>

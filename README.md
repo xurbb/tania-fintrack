@@ -1,4 +1,6 @@
-# Tania's FinTrack 💙
+# Your Personal FinTrack 💙
+
+> **Manage Money Better and Wiser, Get Richer Faster!**
 
 **🌐 Live:** https://tania-fintrack.vercel.app
 
